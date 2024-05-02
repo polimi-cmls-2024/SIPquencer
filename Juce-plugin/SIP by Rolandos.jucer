@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="cEBxV6" name="SIP by Rolandos" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginWantsMidiIn">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
+              pluginVST3Category="Instrument">
   <MAINGROUP id="cBk79Z" name="SIP by Rolandos">
     <GROUP id="{9653D1F9-3D22-B998-8570-229013EB56DA}" name="Source">
       <FILE id="KFVTvI" name="PluginProcessor.cpp" compile="1" resource="0"

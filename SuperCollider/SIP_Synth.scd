@@ -53,6 +53,18 @@ SynthDef(\kick, {
     Out.ar(out, sig!2);
 }).add;
 )
+
+(
+SynthDef(\snare, {
+    arg out = 0, freq = 400, noiseAmp = 0.5, toneFreq = 1000, toneAmp = 0.5, amp = 0.5, gate = 1, decay = 0.2;
+    var noise, tone, env;
+    env = EnvGen.kr(Env.perc(0.01, decay), gate, doneAction: 2);
+    noise = WhiteNoise.ar(env * noiseAmp);
+    tone = RLPF.ar(SinOsc.ar(toneFreq, 0, env * toneAmp), freq, 0.1);
+    Out.ar(out, (noise + tone) * amp!2);
+}).add;
+)
+
 Synth(\snare)
 
 OSCFunc.newMatching({|msg, time, addr, 	recvPort| Synth(\snare)},'/FMSynth/freq', 	n);
