@@ -44,10 +44,24 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
             int index = i * btnGridCols + j;
             int midiKey = midiKeyScheme[index];
             int key = keys[index];
-            KeyButton button(midiKey, i, j);
-            keyButtonGrid.insert({ key,KeyButton(midiKey, i, j)});
+            MIDItoKeyMap.insert({ midiKey,key });
+            juce::String defLabel = juce::MidiMessage::getMidiNoteName(midiKey, true, true, 3);
+            juce::String Rlabel = RstateKeyLabels[index];
+            juce::String RPlabel = defLabel;
+            juce::String RRPlabel = RRPstateKeyLabels[index];
+
+            keyButtonGrid.insert({ midiKey,KeyButton(midiKey, i, j,defLabel,Rlabel,RPlabel,RRPlabel)});
         }
     }
+
+    for(int i = 0; i< sideKeys.size(); ++i){
+		int key = sideKeys[i];
+		juce::String defLabel = defSideLables[i];
+        juce::String Rlabel = RstateSideLabels[i];
+        juce::String RPlabel = RPstateSideLabels[i];
+        juce::String RRPlabel = RRPstateSideLabels[i];
+        sideButtons.insert({ key,KeyButton(key,i,1,defLabel,Rlabel,RPlabel,RRPlabel) });      
+    };
 }
 
 SIP_by_RolandosAudioProcessor::~SIP_by_RolandosAudioProcessor()
@@ -256,18 +270,20 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 		}
         else if (message.isSysEx()) {
           
-          DBG("Received MIDI SysEx: " << message.getDescription());
+          //DBG("Received MIDI SysEx: " << message.getDescription());
           const auto commandType = message.getSysExData()[0];
           const auto data = message.getSysExData()[1];
 
-          DBG("command: " << commandType);
+
+         // DBG("command: " << commandType);
+         // DBG("data: " << data);
          
           switch (commandType) {
             case 0:
-                if (data >= 0 && data < 12) {
+                if (data >= 0 && data < 12 || data==17 || data ==18) {
                     pressKey(data);
                 }
-                else if (data >= 50 && data < 62) {
+                else if (data >= 50 && data < 62 || data == 67 || data == 68) {
                     releaseKey(data - 50);
                 }
                 break;
@@ -282,17 +298,16 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 				}
 				break;
             case 3:
-
-                // Create a vector to store the sliced data
-                // Copy bytes 1 to 17 into the slicedData vector
-                for (int i = 0; i < numSteps; ++i) {
-                    if (message.getSysExData()[i+1] < 128 && message.getSysExData()[i+1] >= 0) {
-                        sequences[selectedSequence][i] = message.getSysExData()[i+1];
-                    }
-                }        
+                updateSelectedSequence(message.getSysExData());  
                 break;
-              default:
-                  break;
+            case 4:
+                updateState(data);
+                break;
+
+            case 5:
+                updateTranspose(data);
+            default:
+                break;
               
           }
           
@@ -370,12 +385,17 @@ void SIP_by_RolandosAudioProcessor::noteOff(int midiKey)
 
 void SIP_by_RolandosAudioProcessor::pressKey(int key)
 {
-    DBG("Pressing key: " << key);
+    //DBG("Pressing key: " << key);
 	// Check if the key exists in the grid
-	if (keyButtonGrid.find(key) != keyButtonGrid.end())
+	if (key <12 && keyButtonGrid.find(key) != keyButtonGrid.end())
 	{
 		// Update the button state
         keyButtonGrid[key].pressed = true;
+	}else if(key==17 || key==18 && sideButtons.find(key) != sideButtons.end()){
+		sideButtons[key].pressed = true;
+	}
+	else {
+		DBG("Invalid key");
 	}
 }
 
@@ -383,12 +403,18 @@ void SIP_by_RolandosAudioProcessor::pressKey(int key)
 void SIP_by_RolandosAudioProcessor::releaseKey(int key)
 {
     // Check if the key exists in the grid
-    DBG("Releasing key: " << key);
+   // DBG("Releasing key: " << key);
 
-    if (keyButtonGrid.find(key) != keyButtonGrid.end())
+    if (key < 12 && keyButtonGrid.find(key) != keyButtonGrid.end())
     {
         // Update the button state
         keyButtonGrid[key].pressed = false;
+    }
+    else if (key == 17 || key == 18 && sideButtons.find(key) != sideButtons.end()) {
+        sideButtons[key].pressed = false;
+    }
+    else {
+        DBG("Invalid key");
     }
 }
 
@@ -402,4 +428,35 @@ void SIP_by_RolandosAudioProcessor::selectStep(int stepNumber) {
 
 void SIP_by_RolandosAudioProcessor::selectNote(int noteNumber) {
 	selectedNote = noteNumber;
+}
+
+void SIP_by_RolandosAudioProcessor::updateSelectedSequence(const juce::uint8* data) {
+    for (int i = 0; i < numSteps; ++i) {
+        if (data[i + 1] < 128 && data[i + 1] >= 0) {
+            sequences[selectedSequence][i] = data[i + 1];
+        }
+    }
+}
+
+void SIP_by_RolandosAudioProcessor::updateState(const unsigned char newState) {
+	if (newState == DEF || newState == R || newState == RP || newState == RRP ) {
+		state = newState;
+	}
+    else {
+        DBG("Invalid state");
+    }
+}
+
+void SIP_by_RolandosAudioProcessor::updateTranspose(const int transpose) {
+    DBG("Transposing by: " << (transpose - transposeOffset));
+    for (auto& entry : keyButtonGrid)
+    {
+        KeyButton& button = entry.second;
+        //DBG("entry first (midi key): " << entry.first);
+        button.midiKey = entry.first + (transpose - transposeOffset) * 12;
+       // DBG("New key: " << button.midiKey);
+        button.defLabel = juce::MidiMessage::getMidiNoteName(button.midiKey, true, true, 3);
+        //DBG("New label: " << button.defLabel);
+        button.RPlabel = button.defLabel;
+    }
 }

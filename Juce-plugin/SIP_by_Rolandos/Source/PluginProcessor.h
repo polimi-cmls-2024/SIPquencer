@@ -21,9 +21,17 @@ struct KeyButton
     bool playing;
     int row;
     int col;
-
-    KeyButton() : midiKey(0), pressed(false), playing(false), row(0),col(0) {}
-    KeyButton(int _midiKey,int _row, int _col) : midiKey(_midiKey), pressed(false),playing(false), row(_row), col(_col) {}
+    juce:: String defLabel;
+    juce::String Rlabel;
+    juce::String RPlabel;
+    juce::String RRPlabel;
+    KeyButton() : midiKey(0), pressed(false), playing(false), row(0),col(0) ,defLabel(""),Rlabel(""), RPlabel(""), RRPlabel("") {}
+    KeyButton(int _midiKey, juce::String defLabel, juce::String _Rlabel, juce::String _RPlabel, juce::String _RRPlabel) :
+        midiKey(_midiKey), pressed(false), playing(false), row(-1), col(-1),
+        defLabel(defLabel), Rlabel(_Rlabel), RPlabel(_RPlabel), RRPlabel(_RRPlabel) {}
+    KeyButton(int _midiKey,int _row, int _col,juce::String defLabel, juce::String _Rlabel, juce::String _RPlabel, juce::String _RRPlabel) :
+        midiKey(_midiKey), pressed(false),playing(false), row(_row), col(_col),
+        defLabel(defLabel),Rlabel(_Rlabel),RPlabel(_RPlabel),RRPlabel(_RRPlabel) {}
 };
 //==============================================================================
 /**
@@ -34,6 +42,13 @@ public:
     //==============================================================================
     SIP_by_RolandosAudioProcessor();
     ~SIP_by_RolandosAudioProcessor() override;
+
+    enum State {
+        DEF,  // Default state
+        R,    // R state
+        RP,   // RP state
+        RRP   // RRP state
+    };
 
     static constexpr int numSteps = 16; // Define the number of steps
     static constexpr int seqRows = 3; // Define the number of sequences
@@ -47,29 +62,33 @@ public:
         69, 70, 71
         };
     const std::array<int,12> keys = {1,2,3,4,5,6,7,8,9,10,0,11};
+    const std::array<int, 2> sideKeys = {17,18};
+
+    const std::array<juce::String, 2> defSideLables = { "oct+","oct-" };
+
+    const std::array<juce::String, 12> RstateKeyLabels = { "1","2","3","4","5","6","7","8","9","Clear Seq.","0","Mute Seq." };
+    const std::array<juce::String, 2> RstateSideLabels = { "step",""};
+
+    const std::array<juce::String, 2> RPstateSideLabels = { "","note" };
+
+
+    //const std::array<juce::String, 12> RPstateLabels = { "1","2","3","4","5","6","7","8","9","10","0","11" };
+    const std::array<juce::String, 12> RRPstateKeyLabels = { "Seq. 1","Seq. 2","Seq.3","","","","","","Acid Maniac","Clear All","","Play/Pause"};
+    const std::array<juce::String, 2> RRPstateSideLabels = { "seq.","view"};
 
 
     std::map<int, KeyButton> keyButtonGrid;
-    std::map<int, int> MIDItoKeyMap = {
-		{60,1},
-		{61,2},
-		{62,3},
-		{63,4},
-		{64,5},
-		{65,6},
-		{66,7},
-		{67,8},
-		{68,9},
-		{69,10},
-		{70,0},
-		{71,11}
-	};
+    std::map<int, KeyButton> sideButtons;
+    std::map<int, int> MIDItoKeyMap;
 
 
-
+    const int transposeOffset = 64;
 
     using RAPPtr = juce::RangedAudioParameter*;
     using RAPPtrArray = std::array<RAPPtr, param::NumParams>;
+
+
+ 
 
    
 
@@ -118,10 +137,18 @@ public:
     void selectStep(int stepNumber);
     void selectNote(int noteNumber);
 
-    int getCurrentStep() { return currentStep; }
-    int getSelectedStep() { return selectedStep; }
-    int getSequenceStep(int seq, int step) { return sequences[seq][step]; }
-    int getSelectedSequence() { return selectedSequence; }
+    void updateSelectedSequence(const juce::uint8* data);
+    void updateState(const unsigned char newState);
+
+    int getCurrentStep() const { return currentStep; }
+    int getSelectedStep()const { return selectedStep; }
+    int getSequenceStep(int seq, int step) const { return sequences[seq][step]; }
+    int getSelectedSequence() const { return selectedSequence; }
+    unsigned char getSequencerState() const { return state; }
+    void updateTranspose(const int transpose);
+
+
+    const std::array<int, 2> getSideKeys() const { return sideKeys; }
     // *****************************************************************************
     // 1. We are going to use the AudioProcessorValueTreeState class for implementing
     // the communication between Editor and Processor   
@@ -151,6 +178,11 @@ private:
     int selectedNote = 0;
     
     std::array<std::array<int,numSteps>,seqRows> sequences;
+
+
+ 
+    unsigned char state = DEF;
+
     
 
     // Other member variables...

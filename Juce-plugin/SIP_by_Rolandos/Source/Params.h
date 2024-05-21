@@ -18,6 +18,8 @@ namespace param
 	{
 		GainWet,
 		Frequency,
+		Attack,
+		Decay,
 		NumParams
 	};
 	static constexpr int NumParams = static_cast<int>(PID::NumParams);
@@ -35,6 +37,7 @@ namespace param
 		{
 		case PID::GainWet: return "Gain Wet";
 		case PID::Frequency: return "Frequency";
+		case PID::Attack: return "Attack";
 		default: return "Unknown";
 		}
 	}
@@ -228,6 +231,8 @@ namespace param
 
 		createParam(params, PID::GainWet, range::lin(-12.f, 12.f), 0.f, Unit::Db);
 		createParam(params, PID::Frequency, range::withCentre(20.f, 20000.f, 1000.f), 1000.f, Unit::Hz);
+		createParam(params, PID::Attack, range::lin(0.1f, 1000.f), 100.f, Unit::Hz);
+		createParam(params, PID::Decay, range::lin(0.1f, 1000.f), 100.f, Unit::Hz);
 
 		return { params.begin(), params.end() };
 	}

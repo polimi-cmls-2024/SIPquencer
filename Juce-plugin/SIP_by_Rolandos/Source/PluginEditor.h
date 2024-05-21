@@ -36,7 +36,6 @@ class SIP_by_RolandosAudioProcessorEditor  : public juce::AudioProcessorEditor,
                                              private juce::Timer
 
 {
-    using AttachedSliderArray = std::array<AttachedSlider, 3>;
    
 
 public:
@@ -48,8 +47,11 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    AttachedSliderArray attackSliders;
-    AttachedSliderArray decaySliders;
+
+
+    std::map<int, juce::Slider*> attackSliders;
+    std::map<int, juce::Slider*> decaySliders;
+    std::map<int, juce::ComboBox*> instrSelectors; // OwnedArray for managing ComboBox pointers
 
     SIP_by_RolandosAudioProcessor& audioProcessor;
 
@@ -64,27 +66,61 @@ private:
     // Timer callback
     void timerCallback() override;
 
+    juce::Rectangle<int> mainContainerRect;
+    juce::Rectangle<int> topRowRect;
+    juce::Rectangle<int> bottomRowRect;
+    juce::Rectangle<int> effectsRect;
+    juce::Rectangle<int> keysContainer;
+    juce::Rectangle<int> controlsColumn;
+    juce::Rectangle<int> sequencerColumn;
+    std::map<int,juce::Rectangle<int>> quarterColums;
+    std::map<int,juce::Rectangle<int>> quarterRows;
+    std::map<int,std::map<int,juce::Rectangle<int>>> quarterRowRects;
+    std::map<int, std::map<int, juce::Rectangle<int>>> stepRects;
+
+    std::map<int, juce::Rectangle<int>> controlRows;
+    std::map<int,juce::Rectangle<int>> selectorContainers;
+    std::map<int, juce::Rectangle<int>> attackContainers;
+    std::map<int, juce::Rectangle<int>> decayContainers;
+
+    std::map<int, juce::Rectangle<int>> buttonGridRects;
+    std::map<int, juce::Rectangle<int>> sideButtonsRects;
+
+
+
+
+
     juce::Rectangle<int> sequencerRect; // Rectangle to contain the step sequencer grid
     juce::Rectangle<int> seqControlsRect;  // Rectangle for ComboBoxes
     juce::Rectangle<int> stepGridRect;  // Rectangle for the step grid
     juce::Rectangle<int> phoneRect; // Rectangle to contain the step sequencer grid
     juce::RectangleList<int> sequenceControls;
-    
+
+
 
     juce::Colour getRowColorForRow(int row) const;
     juce::Colour getColorForStep(int row,int step) const;
-
+    juce::Colour getButtonColor(const KeyButton button) const;
+    juce::String getButtonLabel(const KeyButton button) const;
    
-    void drawButtonGrid(juce::Graphics&     g, const juce::Rectangle<int>& bounds);
     void drawButton(juce::Graphics& g, const juce::Rectangle<int>& bounds, KeyButton button);
-    //void drawStepRectangles(juce::Graphics& g, const juce::Rectangle<int>& bounds, int row);
+  
 
-    void drawSequencerRows(juce::Graphics& g, const juce::Rectangle<int>& bounds);
 
-    void drawStepGrid(juce::Graphics& g, const juce::Rectangle<int>& bounds);
-    void drawSeqControls(juce::Graphics& g, const juce::Rectangle<int>& bounds);
-    void drawRow(juce::Graphics& g, const juce::Rectangle<int>& bounds, int row);
-    void resizeSeqControls();
+    void setControlsBounds(juce::Rectangle<int> container);
+    void setControlBounds(juce::Rectangle<int> container,int row);
+    void setSequencerBounds(juce::Rectangle<int> container);
+    void setQuarterBounds(juce::Rectangle<int> container,int quarter);
+    void setQuarterStepsBounds(juce::Rectangle<int> container, int row, int quarter);
+    void setStepBounds(juce::Rectangle<int> container, int row, int step);
+    void setEffectsBounds(juce::Rectangle<int> container);
+    void setKeyboardBounds(juce::Rectangle<int> container);
+    void setButtonGridBounds(const juce::Rectangle<int>& gridBounds);
+    void setSideButtonBounds(const juce::Rectangle<int>& sideButtonsContainer);
+
+
+    void selectInstrument(int selectorIndex);
+
     //*****************************************************************************
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SIP_by_RolandosAudioProcessorEditor)
 };
