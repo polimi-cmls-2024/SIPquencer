@@ -166,6 +166,7 @@ public:
 private:
     //==============================================================================
       // Add member variables for tempo and step tracking
+
     bool isTempoRunning = false;
 
     int currentStep = 0;
@@ -183,7 +184,8 @@ private:
  
     unsigned char state = DEF;
 
-    
+    juce::DatagramSocket ds;
+    juce::OSCSender sender;
 
     // Other member variables...
     // *****************************************************************************
