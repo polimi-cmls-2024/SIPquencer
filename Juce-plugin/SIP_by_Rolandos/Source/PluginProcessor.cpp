@@ -239,6 +239,8 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
             noteOff(message.getNoteNumber());
 		}
         else if (message.isController()) {
+            DBG("Received MIDI controller: " << message.getDescription());
+            sender.send("/Control", message.getControllerValue(), message.getControllerNumber());
 
         }
         else if (message.isSysEx()) {

@@ -60,7 +60,7 @@ public:
         63, 64, 65,
         66, 67, 68,
         69, 70, 71
-        };
+        };      
     const std::array<int,12> keys = {1,2,3,4,5,6,7,8,9,10,0,11};
     const std::array<int, 2> sideKeys = {17,18};
 
