@@ -14,7 +14,7 @@ PHONE WIRES/PINS:
 MPU6050 mpu(Wire);
 unsigned long timer = 0;
 
-const float sensorMin = -180;      // Minimum sensor value (degrees)
+const float sensorMin = 0;         // Minimum sensor value (degrees)
 const float sensorMax = 180;       // Maximum sensor value (degrees)
 
 float sensorValue;                 // value read directly from sensor (processed by MPU6050 library)
@@ -33,22 +33,22 @@ void setup() {
 
 void loop() {
   sendCC();
-  resetCoords();
+  // resetCoords();
 }
 
 // Initialization 
 void initAll(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   Wire.begin();
   byte status = mpu.begin();
   // Serial.print(F("MPU6050 status: "));
   // Serial.println(status);
   // while(status!=0){ } // stop everything if could not connect to MPU6050
   // Serial.println(F("Calculating offsets, do not move MPU6050"));
-  delay(1000);
-  mpu.upsideDownMounting = true; // uncomment this line if the MPU6050 is mounted upside-down
+  // delay(1000);
+  // mpu.upsideDownMounting = true; // uncomment this line if the MPU6050 is mounted upside-down
   mpu.calcOffsets(); // gyro and accelero
-  // Serial.println("Done!\n");
+  Serial.println("Done!\n");
   MIDI.begin();
   pinMode(ledPin, OUTPUT);
   pinMode(resetCoordinatesBtn, INPUT);
@@ -60,14 +60,18 @@ void sendCC(){
   mpu.update();
   
   // if((millis()-timer)>100){ // print data every 10ms
-    // Serial.print("X : ");
-    // Serial.print(mpu.getAngleX());
-    // Serial.print("\tY : ");
-    // Serial.print(mpu.getAngleY());
-    // Serial.print("\tZ : ");
-    // Serial.println(mpu.getAngleZ());
-      
+  //   Serial.print("X : ");
+  //   Serial.print(mpu.getAngleX());
+  //   Serial.print("\n");
+  //   Serial.print("\tY : ");
+  //   Serial.print(mpu.getAngleY());
+  //   Serial.print("\n");
+  //   Serial.print("\tZ : ");
+  //   Serial.println(mpu.getAngleZ());
+  // }
 
+
+  // COMMENT
   // Get sensor value
   // NOTE: X and Y angles return weird values, maybe try different library
   sensorValue = mpu.getAngleZ() + baseValue;
@@ -76,11 +80,11 @@ void sendCC(){
   // Serial.print("\n");
 
   // Clip sensor value if limits are exceeded
-  if(sensorValue < sensorMin)
+  if(sensorValue < sensorMin){
     sensorValue = sensorMin;
-  else if(sensorValue > sensorMax)
+  }else if(sensorValue > sensorMax){
     sensorValue = sensorMax;
-  
+  }
 
   // Map value to MIDI range
   mappedValue = map(sensorValue, sensorMin, sensorMax, 0, 127);
@@ -96,7 +100,7 @@ void sendCC(){
     // Serial.print(mappedValue);
     // Serial.print("\n");
   }
-  delay(100);
+  // delay(100);
 }
 
 // NEEDS REVISION
