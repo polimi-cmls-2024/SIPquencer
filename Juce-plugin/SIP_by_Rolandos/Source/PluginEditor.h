@@ -50,8 +50,18 @@ public:
 
 
     std::map<int, juce::Slider*> attackSliders;
-    std::map<int, juce::Slider*> decaySliders;
+    std::map<int, juce::Slider*> releaseSliders;
+    std::map<int, juce::Slider*> cutoffSliders;
+
+    juce::Slider reverbSlider;
+    juce::Slider delaySlider;
+
+
+
+
+
     std::map<int, juce::ComboBox*> instrSelectors; // OwnedArray for managing ComboBox pointers
+    juce::ComboBox effectSelector;
 
     SIP_by_RolandosAudioProcessor& audioProcessor;
 
@@ -73,19 +83,24 @@ private:
     juce::Rectangle<int> keysContainer;
     juce::Rectangle<int> controlsColumn;
     juce::Rectangle<int> sequencerColumn;
-    std::map<int,juce::Rectangle<int>> quarterColums;
-    std::map<int,juce::Rectangle<int>> quarterRows;
-    std::map<int,std::map<int,juce::Rectangle<int>>> quarterRowRects;
+    std::map<int, juce::Rectangle<int>> quarterColums;
+    std::map<int, juce::Rectangle<int>> quarterRows;
+    std::map<int, std::map<int,juce::Rectangle<int>>> quarterRowRects;
     std::map<int, std::map<int, juce::Rectangle<int>>> stepRects;
 
     std::map<int, juce::Rectangle<int>> controlRows;
-    std::map<int,juce::Rectangle<int>> selectorContainers;
+    std::map<int, juce::Rectangle<int>> selectorContainers;
     std::map<int, juce::Rectangle<int>> attackContainers;
-    std::map<int, juce::Rectangle<int>> decayContainers;
+    std::map<int, juce::Rectangle<int>> releaseContainers;
+    std::map<int, juce::Rectangle<int>> cutoffContainers;
+
+    juce::Rectangle<int> reverbContainer;
+    juce::Rectangle<int> delayContainer;
+
+
 
     std::map<int, juce::Rectangle<int>> buttonGridRects;
     std::map<int, juce::Rectangle<int>> sideButtonsRects;
-
 
 
 
@@ -117,9 +132,11 @@ private:
     void setKeyboardBounds(juce::Rectangle<int> container);
     void setButtonGridBounds(const juce::Rectangle<int>& gridBounds);
     void setSideButtonBounds(const juce::Rectangle<int>& sideButtonsContainer);
+    void setEffectKnobsBounds(juce::Rectangle<int> container);
 
 
     void selectInstrument(int selectorIndex);
+    void selectControl();
 
     //*****************************************************************************
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SIP_by_RolandosAudioProcessorEditor)

@@ -127,9 +127,9 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 
-    void noteOn(int midiKey);
-    void noteOff(int midiKey);
-    void pressKey(int keyCode);
+    void noteOn(const int midiKey);
+    void noteOff(const int midiKey);
+    void pressKey(const int keyCode);
     void releaseKey(int keyCode);
 
   

@@ -52,7 +52,7 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
             juce::String RPlabel = defLabel;
             juce::String RRPlabel = RRPstateKeyLabels[index];
 
-            keyButtonGrid.insert({ midiKey,KeyButton(midiKey, i, j,defLabel,Rlabel,RPlabel,RRPlabel)});
+            keyButtonGrid.insert({ key,KeyButton(midiKey, i, j,defLabel,Rlabel,RPlabel,RRPlabel)});
         }
     }
 
@@ -250,13 +250,13 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
           const int data = message.getSysExData()[1];
 
 
-        /*  DBG("command: " << commandType);
-          DBG("data: " << data);*/
+          DBG("command: " << commandType);
+          DBG("data: " << data);
          
           switch (commandType) {
             case 0:
                 if (data >= 0 && data < 12 || data==17 || data ==18) {
-                    pressKey(data);
+                    pressKey((int)data);
                 }
                 else if (data >= 50 && data < 62 || data == 67 || data == 68) {
                     releaseKey(data - 50);
@@ -338,7 +338,7 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new SIP_by_RolandosAudioProcessor();
 }
 // *****************************************************************************
-void SIP_by_RolandosAudioProcessor::noteOn(int midiKey)
+void SIP_by_RolandosAudioProcessor::noteOn(const int midiKey)
 {
     // Check if the MIDI key exists in the grid
     if (MIDItoKeyMap.find(midiKey) != MIDItoKeyMap.end())
@@ -348,7 +348,7 @@ void SIP_by_RolandosAudioProcessor::noteOn(int midiKey)
     }
 }
 
-void SIP_by_RolandosAudioProcessor::noteOff(int midiKey)
+void SIP_by_RolandosAudioProcessor::noteOff(const int midiKey)
 {
     // Check if the MIDI key exists in the grid
     if (MIDItoKeyMap.find(midiKey) != MIDItoKeyMap.end())
@@ -358,7 +358,7 @@ void SIP_by_RolandosAudioProcessor::noteOff(int midiKey)
     }
 }
 
-void SIP_by_RolandosAudioProcessor::pressKey(int key)
+void SIP_by_RolandosAudioProcessor::pressKey(const int key)
 {
     //DBG("Pressing key: " << key);
 	// Check if the key exists in the grid
