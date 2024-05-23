@@ -3,7 +3,6 @@
 #include <MIDI.h>
 #include "Wire.h"
 #include <MPU6050_light.h>
-#include <MIDI.h>
 // Create and bind the MIDI interface to the default hardware Serial port
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -119,7 +118,7 @@ MPU6050 mpu(Wire);
 unsigned long timer = 0;
 
 const float sensorMin = 0;         // Minimum sensor value (degrees)
-const float sensorMax = 180;       // Maximum sensor value (degrees)
+const float sensorMax = 120;       // Maximum sensor value (degrees)
 
 float sensorValue;                 // value read directly from sensor (processed by MPU6050 library)
 int mappedValue;                   // value of MIDI content
@@ -659,7 +658,7 @@ void initGyro(){
   // delay(1000);
   // mpu.upsideDownMounting = true; // uncomment this line if the MPU6050 is mounted upside-down
   mpu.calcOffsets(); // gyro and accelero
-  pinMode(resetCoordinatesBtn, INPUT);
+  // baseValue = mpu.getAngleZ();
 }
 void sendGyroCC(){
   mpu.update();
@@ -667,10 +666,8 @@ void sendGyroCC(){
   // COMMENT
   // Get sensor value
   // NOTE: X and Y angles return weird values, maybe try different library
-  sensorValue = mpu.getAngleZ() - baseValue;
-  // Serial.print("Sensor value");
-  // Serial.print(sensorValue);
-  // Serial.print("\n");
+  sensorValue = mpu.getAngleZ();
+  
 
   // Clip sensor value if limits are exceeded
   if(sensorValue < sensorMin){
@@ -682,14 +679,17 @@ void sendGyroCC(){
   // Map value to MIDI range
   mappedValue = map(sensorValue, sensorMin, sensorMax, 0, 127);
 
-  // Serial.print("mappedValue:");
-  // Serial.print(mappedValue);
-  // Serial.print("\n");
-  
+
   if(mappedValue != previousSensorValue && resetBtnState){
     // Serial.print("mappedValue:\t");
     // Serial.println(mappedValue);
-
+    Serial.print("mappedValue:\t");
+    Serial.print(mappedValue);
+    Serial.print("\n");
+    Serial.print("Sensor value:\t");
+    Serial.print(sensorValue);
+    Serial.print("\n");
+  
     MIDI.sendControlChange(1, mappedValue, 1); // (CC mode, value, MIDI channel); CC mode = 1 corresponds to modulation wheel
     previousSensorValue = mappedValue;
     // Serial.print("Sent new value");
