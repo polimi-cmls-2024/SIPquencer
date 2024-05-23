@@ -13,21 +13,21 @@
 #include "Params.h"
 #include <array>
 
-struct AttachedSlider
-{
-    using Slider = juce::Slider;
-    using Attachment = juce::SliderParameterAttachment;
-    using Component = juce::Component;
-    AttachedSlider(SIP_by_RolandosAudioProcessor& processor, param::PID pID) :
-        slider(),
-        attachment(*processor.params[static_cast<int>(pID)], slider, nullptr)
-    {
-        slider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
-    }
-
-    Slider slider;
-    Attachment attachment;
-};
+//struct AttachedSlider
+//{
+//    using Slider = juce::Slider;
+//    using Attachment = juce::SliderParameterAttachment;
+//    using Component = juce::Component;
+//    AttachedSlider(SIP_by_RolandosAudioProcessor& processor, param::PID pID) :
+//        slider(),
+//        attachment(*processor.params[static_cast<int>(pID)], slider, nullptr)
+//    {
+//        slider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+//    }
+//
+//    Slider slider;
+//    Attachment attachment;
+//};
 
 //==============================================================================
 /**

@@ -153,8 +153,7 @@ public:
     // 1. We are going to use the AudioProcessorValueTreeState class for implementing
     // the communication between Editor and Processor   
     //   // AudioProcessorValueTreeState
-    juce::AudioProcessorValueTreeState apvts;
-    RAPPtrArray params;  
+ 
 
 
     // we need to define a function where we actually associate all parameters and that

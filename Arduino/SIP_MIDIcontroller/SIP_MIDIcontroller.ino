@@ -177,18 +177,21 @@ void printSequencer(){
 }
 
 void sendSelectedSequenceVector(){
-  for (int i = 0; i < STEP_MAX_SIZE; ++i) {
-      selectedSeq[i + 2] = _sequencer[selectedSequence]._sequence[i].note;
-  }
+  sendSequenceVector(selectedSequence);
   // // Print the contents of selectedSeq
   // for (int i = 0; i < STEP_MAX_SIZE + 3; ++i) {
   //     Serial.print(selectedSeq[i], HEX);
   //     Serial.print(" ");
   // }
   // Serial.println();
- MIDI.sendSysEx(STEP_MAX_SIZE +3, selectedSeq,true);
 }
 
+void sendSequenceVector(int seq){
+ for (int i = 0; i < STEP_MAX_SIZE; ++i) {
+      selectedSeq[i + 2] = _sequencer[seq]._sequence[i].note;
+  }
+  MIDI.sendSysEx(STEP_MAX_SIZE +3, selectedSeq,true);
+}
 void sendState(){
   byte toSendState[4] = {0xF0,4,state,0xF7};
   MIDI.sendSysEx(4, toSendState,true);
@@ -278,6 +281,7 @@ void onPPQNCallback(uint32_t tick)
 
 
           sendMidiMessage(NOTE_OFF+_note_stack[i].channel,_note_stack[i].note, 0);
+          
         }
         _note_stack[i].length = -1;
       }
@@ -298,14 +302,17 @@ void onClockStop()
   Serial.write(MIDI_STOP);
   // send all note off on sequencer stop
   
+   freeNoteStack();
+  _playing = false;
+}
+
+void freeNoteStack(){
   for ( uint8_t i = 0; i < NOTE_STACK_SIZE; i++ ) {
     sendMidiMessage(NOTE_OFF+_note_stack[i].channel,_note_stack[i].note, 0);
       _note_stack[i].length = -1;
   }
 
-  _playing = false;
 }
-
 
 
 /*--------------------MANAGE SEQUENCES-------------------------*/
@@ -370,11 +377,11 @@ void muteSeq(){
 void playPause(){
 
   if ( _playing == false ) {
-    Serial.println("PLAY");
+    // Serial.println("PLAY");
       // Starts the clock, tick-tac-tick-tac...
     uClock.start();
   } else {
-    Serial.println("STOP");
+    // Serial.println("STOP");
     // stop the clock
     uClock.stop();
   }
@@ -384,6 +391,7 @@ void clearSequence(){
   for(int i=0;i<STEP_MAX_SIZE;i++){
     _sequencer[selectedSequence]._sequence[i].note = 0;
   }
+  freeNoteStack();
   sendSelectedSequenceVector();
 }
 
@@ -391,7 +399,11 @@ void resetAll(){
   selectedStep = 1;
   selectedSequence = 1;
   digitedStep = 0;
+  freeNoteStack();
   initSequencerData();
+   for(int i=0;i<N_TRACKS;i++){
+    sendSequenceVector(i);
+  }
 }
 
 void initSequencerData(){
@@ -678,19 +690,17 @@ void sendGyroCC(){
 
   // Map value to MIDI range
   mappedValue = map(sensorValue, sensorMin, sensorMax, 0, 127);
-
-
+  
   if(mappedValue != previousSensorValue && resetBtnState){
-    // Serial.print("mappedValue:\t");
-    // Serial.println(mappedValue);
-    Serial.print("mappedValue:\t");
-    Serial.print(mappedValue);
-    Serial.print("\n");
-    Serial.print("Sensor value:\t");
-    Serial.print(sensorValue);
-    Serial.print("\n");
+ 
+    // Serial.print("\n");
+    // Serial.print("Sensor value:\t");
+    // Serial.print("selectedSequence+2:\t");
+    // Serial.println(selectedSequence+2);
   
     MIDI.sendControlChange(1, mappedValue, 1); // (CC mode, value, MIDI channel); CC mode = 1 corresponds to modulation wheel
+    MIDI.sendControlChange(1, mappedValue, selectedSequence+2); // (CC mode, value, MIDI channel); CC mode = 1 corresponds to modulation wheel
+
     previousSensorValue = mappedValue;
     // Serial.print("Sent new value");
     // Serial.print(mappedValue);
@@ -700,15 +710,15 @@ void sendGyroCC(){
 
 void handleResetCoordButton(){
     resetBtnState = digitalRead(resetCoordinatesBtn);
-    if(resetBtnState != prevResetBtnState && resetBtnState){
-      // Serial.print("resetBtnState:\t");
+   
+    if(resetBtnState != prevResetBtnState){
+      // Serial.print("resetBtnState 2:\t");
       // Serial.println(resetBtnState);
-      prevResetBtnState = resetBtnState;
-      baseValue = mpu.getAngleZ();
+      // Serial.print("prevResetBtnState 2:\t");
+      // Serial.println(prevResetBtnState);
+       prevResetBtnState = resetBtnState;
+       //if(resetBtnState) baseValue = mpu.getAngleZ();
     }
-
-
-
 
 }
 

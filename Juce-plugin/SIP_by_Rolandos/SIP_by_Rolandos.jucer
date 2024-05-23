@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="Tdk6l3" name="SIP_by_Rolandos" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
-              pluginVST3Category="Fx">
+              pluginVST3Category="Fx" cppLanguageStandard="20">
   <MAINGROUP id="EZ1Mu2" name="SIP_by_Rolandos">
     <GROUP id="{F0C928B8-71B6-2D82-C491-B11E565A4E79}" name="Source">
       <FILE id="qHcBGV" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
