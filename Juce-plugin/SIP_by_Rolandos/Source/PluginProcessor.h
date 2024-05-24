@@ -158,10 +158,12 @@ public:
     int getSequenceStep(int seq, int step) const { return sequences[seq][step]; }
     int getSelectedSequence() const { return selectedSequence; }
     unsigned char getSequencerState() const { return state; }
+    int getBpm() { return BPM; };
     void updateTranspose(const int transpose);
 
     void setSelectedControl(const juce::String control);
     void setSelectedInstrument(int channel, int selectedId);
+    void updateBPM(int bpm);
 
 
     const std::array<int, 2> getSideKeys() const { return sideKeys; }
@@ -183,6 +185,7 @@ private:
       // Add member variables for tempo and step tracking
 
     bool isTempoRunning = false;
+    int BPM;
 
     int currentStep = 0;
     int clockCount = 0;
