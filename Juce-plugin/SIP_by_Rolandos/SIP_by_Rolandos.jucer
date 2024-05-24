@@ -4,6 +4,14 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
               pluginVST3Category="Fx" cppLanguageStandard="17">
   <MAINGROUP id="EZ1Mu2" name="SIP_by_Rolandos">
+    <GROUP id="{1CFFAE97-8A8F-F631-C257-CFC2072A8E77}" name="Resources">
+      <FILE id="s4Jdg6" name="sipquencer_large.png" compile="0" resource="1"
+            file="../../Resources/sipquencer_large.png"/>
+      <FILE id="uvYjNN" name="sipquencer_small.png" compile="0" resource="1"
+            file="../../Resources/sipquencer_small.png"/>
+      <FILE id="E2DFTn" name="sipquencer_small_resized.png" compile="0" resource="1"
+            file="../../Resources/sipquencer_small_resized.png"/>
+    </GROUP>
     <GROUP id="{F0C928B8-71B6-2D82-C491-B11E565A4E79}" name="Source">
       <FILE id="qHcBGV" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <FILE id="jvQ3U3" name="PluginProcessor.cpp" compile="1" resource="0"

@@ -172,11 +172,21 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillRoundedRectangle(effectsRect.getUnion(keysContainer),8.f);
     g.setColour(juce::Colours::darkgrey); // Example color
     g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
+    g.drawImageWithin(sip_logo, effectsRect.getX() + effectsRect.getWidth() * 0.28, effectsRect.getY() + effectsRect.getHeight() * 0.1, sip_logo.getWidth() / 3, sip_logo.getHeight() / 3,
+                     juce::RectanglePlacement::stretchToFit);
+    //juce::DropShadow logoShdw;
+    //logoShdw.colour = juce::Colours::darkgrey;
+    //logoShdw.radius = 2;
+    //logoShdw.drawForImage(g, sip_logo);
 
-    g.setColour(juce::Colours::azure);
-    g.drawRoundedRectangle(keysContainer, 8.f, 3);
-    g.setColour(juce::Colours::azure);
-    g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
+
+
+
+
+    //g.setColour(juce::Colours::azure);
+    //g.drawRoundedRectangle(keysContainer, 8.f, 3);
+    //g.setColour(juce::Colours::azure);
+    //g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
 
     g.setColour(juce::Colours::khaki); // Example color
     g.fillRect(controlsColumn);
@@ -218,7 +228,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 	{
 		const juce::Rectangle<float>& buttonRect = entry.second;
 		const KeyButton& button = audioProcessor.sideButtons.at(entry.first);
-		drawButton(g, buttonRect, button);
+		drawSideButton(g, buttonRect, button);
 	}
 	
 }
@@ -235,6 +245,30 @@ void SIP_by_RolandosAudioProcessorEditor::drawButton(juce::Graphics& g, const ju
 
     // Draw button background
     g.fillRoundedRectangle(bounds,5.f);
+
+    //// Draw button border
+    //g.setColour(juce::Colours::purple);
+    //g.drawRect(bounds, 1); // Border width is set to 1 pixel
+
+    // Draw button label (for demonstration purposes)
+    g.setColour(juce::Colours::white);
+    g.setFont(juce::Font(16.0f));
+    juce::String label = getButtonLabel(button);
+    g.drawFittedText(label, bounds.getSmallestIntegerContainer(), juce::Justification::centred, 1);
+}
+
+void SIP_by_RolandosAudioProcessorEditor::drawSideButton(juce::Graphics& g, const juce::Rectangle<float>& bounds, const KeyButton button)
+{
+    // Set color based on button state
+    juce::Colour buttonColor = getSideButtonColor(button);
+    g.setColour(buttonColor);
+
+
+    // Draw button background
+    g.fillRoundedRectangle(bounds, 13.f);
+    g.setColour(juce::Colour(120, 120, 120));
+    g.drawRoundedRectangle(bounds, 13.f, 0.5f);
+    
 
     //// Draw button border
     //g.setColour(juce::Colours::purple);
@@ -301,6 +335,27 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
     }
    
 }
+juce::Colour SIP_by_RolandosAudioProcessorEditor::getSideButtonColor(const KeyButton button) const
+{
+    // Set color based on button state
+    if (button.pressed) {
+        return juce::Colours::darkgoldenrod;
+    }
+    else {
+        switch (audioProcessor.getSequencerState()) {
+        case audioProcessor.DEF:
+            return juce::Colour(192, 194, 192);
+        case audioProcessor.R:
+            return juce::Colours::dodgerblue;
+        case audioProcessor.RP:
+            return juce::Colours::blanchedalmond;
+        case audioProcessor.RRP:
+            return juce::Colours::coral;
+        }
+    }
+
+}
+
 
 juce::String SIP_by_RolandosAudioProcessorEditor::getButtonLabel(const KeyButton button) const
 {
@@ -508,12 +563,13 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectsBounds(juce::Rectangle<float
 
     // Create a smaller rectangle inside the container bounds
     juce::Rectangle<float> innerContainer = container.reduced(margin);
-    juce::Rectangle<int> effectSelectorContainer;
-    effectSelectorContainer.setBounds(innerContainer.getX(), innerContainer.getY(), innerContainer.getWidth(), innerContainer.getHeight() * 0.2);
+    //juce::Rectangle<int> effectSelectorContainer;
+    effectSelectorContainer.setBounds(innerContainer.getX() + innerContainer.getWidth() * 0.2, innerContainer.getY() + innerContainer.getHeight() * 0.7, innerContainer.getWidth(), innerContainer.getHeight() * 0.2);
 
 
-    juce::Rectangle<float> knobsContainer;
-    knobsContainer.setBounds(innerContainer.getX(), innerContainer.getY() + effectSelectorContainer.getHeight(), innerContainer.getWidth(), innerContainer.getHeight() * 0.8);
+    //juce::Rectangle<float> knobsContainer;
+    knobsContainer.setBounds(innerContainer.getX() + innerContainer.getWidth() * 0.2, innerContainer.getY() + innerContainer.getHeight() * 0.2, innerContainer.getWidth(), innerContainer.getHeight() * 0.8);
+    
 
     effectSelectorContainer.reduce(margin, margin);
     effectSelector.setBounds(effectSelectorContainer);
@@ -543,15 +599,13 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<f
 }
 
 void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
-  
-   
     float gridBoundX = container.getX();
     float gridBoundY = container.getY();
     float gridBoundWidth = container.getWidth() * 0.75;
     float gridBoundHeight = container.getHeight();
     buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
     float sideButtonBoundsX = container.getX() + gridBoundWidth;
-    float sideButtonBoundsY = container.getY() + (container.getHeight() * 0.5);
+    float sideButtonBoundsY = container.getY() + (container.getHeight() * 0.5) + 15;
     float sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
     float sideButtonBoundsHeight = container.getHeight()* 0.5;
     sideButtonBounds.setBounds(sideButtonBoundsX, sideButtonBoundsY, sideButtonBoundsWidth, sideButtonBoundsHeight);
@@ -605,17 +659,18 @@ void SIP_by_RolandosAudioProcessorEditor::setButtonGridBounds(const juce::Rectan
 
 void SIP_by_RolandosAudioProcessorEditor::setSideButtonBounds(const juce::Rectangle<float>& sideButtonsContainer)
 {
-    float buttonSize = 50; // Define the size of each button
-    float spacing = 10; // Define the spacing between buttons
+    float buttonWidth = 45; // Define the size of each button
+    float buttonHeight = 28;
+    float spacing = 25; // Define the spacing between buttons
     // Assuming we have two side buttons to draw
     for (const auto& entry : audioProcessor.sideButtons)
     {
         const KeyButton& button = entry.second;
-        float xPos = sideButtonsContainer.getX() + button.col * (buttonSize + spacing);
-        float yPos = sideButtonsContainer.getY() + button.row * (buttonSize + spacing);
+        float xPos = sideButtonsContainer.getX() + button.col * (buttonWidth + spacing);
+        float yPos = sideButtonsContainer.getY() + button.row * (buttonHeight + spacing);
 
         // Define the bounds for the button
-        juce::Rectangle<float> buttonBounds(xPos, yPos, buttonSize, buttonSize);
+        juce::Rectangle<float> buttonBounds(xPos, yPos, buttonWidth, buttonHeight);
         sideButtonsRects[entry.first] = buttonBounds;
     }
 }
