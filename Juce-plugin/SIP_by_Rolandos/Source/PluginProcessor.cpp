@@ -238,7 +238,6 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 		}
         else if (message.isController()) {
             DBG("Received MIDI controller: " << message.getDescription());
-            sender.send("/Control", message.getControllerNumber(), message.getControllerValue(),message.getChannel());
             int value = message.getControllerValue();
             DBG(value);
             float normalizedValue = static_cast<float>(value) / 127.0f;
@@ -249,7 +248,7 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (reverbParameter != nullptr) {
                         DBG(normalizedValue);
                         reverbParameter->setValueNotifyingHost(normalizedValue);
-
+                        sender.send("/Control", 4, message.getControllerValue(), message.getChannel());
                     }
                     else {
                         DBG("Error: Reverb parameter not found in APVTS");
@@ -262,6 +261,7 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (delayParameter != nullptr) {
                         DBG(normalizedValue);
                         delayParameter->setValueNotifyingHost(normalizedValue);
+                        sender.send("/Control", 5, message.getControllerValue(), message.getChannel());
 
                     }
                     else {
@@ -274,7 +274,7 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (attackParameter != nullptr) {
                         DBG(normalizedValue);
                         attackParameter->setValueNotifyingHost(normalizedValue);
-
+                        sender.send("/Control", 2, message.getControllerValue(), message.getChannel());
                     }
                     else {
                         DBG("Error: attack parameter not found in APVTS");
@@ -286,6 +286,20 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (releaseParameter != nullptr) {
                         DBG(normalizedValue);
                         releaseParameter->setValueNotifyingHost(normalizedValue);
+                        sender.send("/Control", 3, message.getControllerValue(), message.getChannel());
+
+                    }
+                    else {
+                        DBG("Error: release parameter not found in APVTS");
+                    }
+                    break;
+                }
+                case Control::cutoff: {
+                    auto* cutoffParameter = apvts.getParameter("cutoff" + std::to_string(selectedSequence + 1));
+                    if (cutoffParameter != nullptr) {
+                        DBG(normalizedValue);
+                        //cutoffParameter->setValueNotifyingHost(normalizedValue);
+                        sender.send("/Control", 1, message.getControllerValue(), message.getChannel());
 
                     }
                     else {

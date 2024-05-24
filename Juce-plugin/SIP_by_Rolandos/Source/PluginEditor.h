@@ -47,7 +47,11 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    void paintView();
+    void paintQuarters(juce::Graphics&);
+    void paintSteps(juce::Graphics&);
+    void paintButtonGrid(juce::Graphics&);
+    void paintSideButtons(juce::Graphics&);
 
 
     std::map<int, juce::Slider*> attackSliders;
@@ -80,6 +84,9 @@ public:
 private:
 // This reference is provided as a quick way for your editor to
 // access the processor object that created it. 
+
+   
+    juce::Image view;
     std::vector<std::vector<bool>> stepSequencerGrid; // Repr   esents the step sequencer grid
 
     const int numRows = 3;
