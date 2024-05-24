@@ -13,6 +13,7 @@
 #include "Params.h"
 #include <array>
 
+
 //struct AttachedSlider
 //{
 //    using Slider = juce::Slider;
@@ -69,7 +70,10 @@ public:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> reverbAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayAttachment;
 
-
+    
+    juce::Image sip_logo = juce::ImageCache::getFromMemory(BinaryData::sipquencer_small_resized_png, BinaryData::sipquencer_small_resized_pngSize);
+    juce::Rectangle<int> effectSelectorContainer;
+    juce::Rectangle<float> knobsContainer;
 
 
     std::map<int, juce::ComboBox*> instrSelectors; // OwnedArray for managing ComboBox pointers
@@ -137,10 +141,14 @@ private:
     juce::Colour getRowColorForRow(int row) const;
     juce::Colour getColorForStep(int row,int step) const;
     juce::Colour getButtonColor(const KeyButton button) const;
+    juce::Colour getSideButtonColor(const KeyButton button) const;
     juce::String getButtonLabel(const KeyButton button) const;
+
+    
+
    
     void drawButton(juce::Graphics& g, const juce::Rectangle<float>& bounds, KeyButton button);
-  
+    void drawSideButton(juce::Graphics& g, const juce::Rectangle<float>& bounds, KeyButton button);
 
 
     void setControlsBounds(juce::Rectangle<float> container);

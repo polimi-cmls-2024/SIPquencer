@@ -609,7 +609,5 @@ void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int select
 }
 
 void SIP_by_RolandosAudioProcessor::updateBPM(int bpm) {
-    auto* bpmParameter = apvts.getParameter("bpm");
-    bpmParameter->setValueNotifyingHost(bpm);
-
+    BPM = bpm;
 }
