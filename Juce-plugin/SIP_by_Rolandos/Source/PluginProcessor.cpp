@@ -349,6 +349,10 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
             case 5:
                 updateTranspose(data);
+                break;
+            case 6:
+                updateBPM(data);
+                break;
             default:
                 break;
               
@@ -472,7 +476,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout SIP_by_RolandosAudioProcesso
         "Delay",
         juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
         0.1f));
-
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "bpm",  1 },
+        "BPM",
+        30.0f, 200.f, 120.0f));
 
 
     return layout;
@@ -598,5 +605,11 @@ void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int select
     sender.send("/ProgramChange", channel, selectedInstr);
     DBG("channel", channel);
     DBG("selectedInstr", selectedInstr);
+
+}
+
+void SIP_by_RolandosAudioProcessor::updateBPM(int bpm) {
+    auto* bpmParameter = apvts.getParameter("bpm");
+    bpmParameter->setValueNotifyingHost(bpm);
 
 }

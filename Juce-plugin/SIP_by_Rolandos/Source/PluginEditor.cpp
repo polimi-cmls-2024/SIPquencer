@@ -19,7 +19,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    startTimerHz(20);
+    startTimerHz(10);
     
     
     //buttonGrid = std::make_unique<KeyButtonGrid>(3, 3);
@@ -110,8 +110,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
 
 
     setSize(800, 600);
-    view = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
-
+ 
 }
 
 
@@ -129,75 +128,76 @@ SIP_by_RolandosAudioProcessorEditor::~SIP_by_RolandosAudioProcessorEditor()
     //==============================================================================
 void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-    g.setColour(juce::Colour(24,39,61)); // Example color
-    g.fillRect(mainContainerRect);
+        g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+        g.setColour(juce::Colour(24, 39, 61)); // Example color
+        g.fillRect(mainContainerRect);
 
-    //paintMainContainer()
-    //g.setColour(juce::Colours::purple); // Example color
-    //g.fillRoundedRectangle(topRowRect,20.f);
-
-
-    g.setColour(juce::Colours::khaki); // Example color
-    g.fillRoundedRectangle(bottomRowRect,30.f);
-    g.setColour(juce::Colours::darkkhaki); // Example color
-    g.drawRoundedRectangle(bottomRowRect, 30.f,3);
-    juce::DropShadow bottomRowShdw;
-    bottomRowShdw.colour = juce::Colours::darkgrey;
-    bottomRowShdw.radius = 30;
-
-    bottomRowShdw.drawForRectangle(g, bottomRowRect.getSmallestIntegerContainer()
-        .withTrimmedBottom(5)
-        .withTrimmedLeft(10)
-        .withTrimmedRight(10)
-        .withTrimmedTop(3));
-
-    g.setColour(juce::Colours::khaki); // Example color
-    g.fillRoundedRectangle(bottomRowRect
-        .withTrimmedBottom(5)
-        .withTrimmedLeft(10)
-        .withTrimmedRight(10)
-        .withTrimmedTop(3), 30.f);
-
-  
-    g.setColour(juce::Colours::khaki); // Example color
-    g.fillRoundedRectangle(topRowRect, 30.f);
-    g.setColour(juce::Colours::darkkhaki); // Example color
-    g.drawRoundedRectangle(topRowRect, 30.f, 3);
+        //paintMainContainer()
+        //g.setColour(juce::Colours::purple); // Example color
+        //g.fillRoundedRectangle(topRowRect,20.f);
 
 
-    juce::DropShadow innerBottomRowShdw;
-    innerBottomRowShdw.colour = juce::Colours::darkgrey;
-    innerBottomRowShdw.radius = 8;
-    innerBottomRowShdw.drawForRectangle(g, effectsRect.getSmallestIntegerContainer().getUnion(keysContainer.getSmallestIntegerContainer()));
-
-    g.setColour(juce::Colour(114,144,159)); // Example color
-    g.fillRoundedRectangle(effectsRect.getUnion(keysContainer),8.f);
-    g.setColour(juce::Colours::darkgrey); // Example color
-    g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
-
-    g.setColour(juce::Colours::azure);
-    g.drawRoundedRectangle(keysContainer, 8.f, 3);
-    g.setColour(juce::Colours::azure);
-    g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
-
-    g.setColour(juce::Colours::khaki); // Example color
-    g.fillRect(controlsColumn);
-
-    for (int row = 0; row < numRows; row++) {
+        g.setColour(juce::Colours::khaki); // Example color
+        g.fillRoundedRectangle(bottomRowRect, 30.f);
         g.setColour(juce::Colours::darkkhaki); // Example color
-		g.fillRoundedRectangle(controlRows[row],5.f);
-        g.setColour(juce::Colours::darkgrey); // Example color
-        g.drawRoundedRectangle(controlRows[row], 5.f, 2);
-        g.setColour(juce::Colours::cadetblue); // Example color
+        g.drawRoundedRectangle(bottomRowRect, 30.f, 3);
+        juce::DropShadow bottomRowShdw;
+        bottomRowShdw.colour = juce::Colours::darkgrey;
+        bottomRowShdw.radius = 30;
 
-		g.fillRect(selectorContainers[row]);
-  //      g.setColour(juce::Colours::coral); // Example color
-		//g.fillRoundedRectangle(attackContainers[row],5.f);
-  //      g.setColour(juce::Colours::lightskyblue); // Example color
-		//g.fillRoundedRectangle(releaseContainers[row],5.f);
-	}
-   
+        bottomRowShdw.drawForRectangle(g, bottomRowRect.getSmallestIntegerContainer()
+            .withTrimmedBottom(5)
+            .withTrimmedLeft(10)
+            .withTrimmedRight(10)
+            .withTrimmedTop(3));
+
+        g.setColour(juce::Colours::khaki); // Example color
+        g.fillRoundedRectangle(bottomRowRect
+            .withTrimmedBottom(5)
+            .withTrimmedLeft(10)
+            .withTrimmedRight(10)
+            .withTrimmedTop(3), 30.f);
+
+
+        g.setColour(juce::Colours::khaki); // Example color
+        g.fillRoundedRectangle(topRowRect, 30.f);
+        g.setColour(juce::Colours::darkkhaki); // Example color
+        g.drawRoundedRectangle(topRowRect, 30.f, 3);
+
+
+        juce::DropShadow innerBottomRowShdw;
+        innerBottomRowShdw.colour = juce::Colours::darkgrey;
+        innerBottomRowShdw.radius = 8;
+        innerBottomRowShdw.drawForRectangle(g, effectsRect.getSmallestIntegerContainer().getUnion(keysContainer.getSmallestIntegerContainer()));
+
+        g.setColour(juce::Colour(114, 144, 159)); // Example color
+        g.fillRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f);
+        g.setColour(juce::Colours::darkgrey); // Example color
+        g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
+
+        g.setColour(juce::Colours::azure);
+        g.drawRoundedRectangle(keysContainer, 8.f, 3);
+        g.setColour(juce::Colours::azure);
+        g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
+
+        g.setColour(juce::Colours::khaki); // Example color
+        g.fillRect(controlsColumn);
+
+        for (int row = 0; row < numRows; row++) {
+            g.setColour(juce::Colours::darkkhaki); // Example color
+            g.fillRoundedRectangle(controlRows[row], 5.f);
+            g.setColour(juce::Colours::darkgrey); // Example color
+            g.drawRoundedRectangle(controlRows[row], 5.f, 2);
+            g.setColour(juce::Colours::cadetblue); // Example color
+
+            g.fillRect(selectorContainers[row]);
+            //      g.setColour(juce::Colours::coral); // Example color
+                  //g.fillRoundedRectangle(attackContainers[row],5.f);
+            //      g.setColour(juce::Colours::lightskyblue); // Example color
+                  //g.fillRoundedRectangle(releaseContainers[row],5.f);
+        }
+ 
+    
     paintQuarters(g);
     paintSteps(g);
     paintButtonGrid(g);
@@ -209,6 +209,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 
 
 void SIP_by_RolandosAudioProcessorEditor::paintView() {
+    view = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
     juce::Graphics gr(view);
     paintQuarters(gr);
     paintSteps(gr);
@@ -661,7 +662,7 @@ void SIP_by_RolandosAudioProcessorEditor::timerCallback()
 {
 
     // Repaint the GUI
-    paintView();
+    repaint();
 }
 
 void SIP_by_RolandosAudioProcessorEditor::selectInstrument(int selectorIndex) {

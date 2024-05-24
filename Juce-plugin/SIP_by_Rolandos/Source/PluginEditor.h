@@ -87,7 +87,7 @@ private:
 
     const int numRows = 3;
     const int numSteps = 16;
-
+            
     // Timer callback
     void timerCallback() override;
 
@@ -117,6 +117,7 @@ private:
 
     juce::Rectangle<float> buttonGridBounds;
     juce::Rectangle<float> sideButtonBounds;
+    juce::Label bpmLabel;
 
 
     std::map<int, juce::Rectangle<float>> buttonGridRects;
