@@ -19,7 +19,8 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    startTimerHz(40);
+    startTimerHz(20);
+    
     
     //buttonGrid = std::make_unique<KeyButtonGrid>(3, 3);
     // Initialize the step sequencer grid with all steps off
@@ -109,6 +110,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
 
 
     setSize(800, 600);
+    view = juce::Image(juce::Image::ARGB, getWidth(), getHeight(), true);
 
 }
 
@@ -131,6 +133,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(juce::Colour(24,39,61)); // Example color
     g.fillRect(mainContainerRect);
 
+    //paintMainContainer()
     //g.setColour(juce::Colours::purple); // Example color
     //g.fillRoundedRectangle(topRowRect,20.f);
 
@@ -194,36 +197,69 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
   //      g.setColour(juce::Colours::lightskyblue); // Example color
 		//g.fillRoundedRectangle(releaseContainers[row],5.f);
 	}
-    for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
-        g.setColour(juce::Colours::darkgrey); // Example color
-        g.fillRoundedRectangle(quarterColums[quarter], 10.f);
-        g.setColour(juce::Colours::black);
-        // Draw the border around the rectangle
-        g.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
-	}
-    for (int row = 0; row < numRows; row++) {
-		for (int step = 0; step < numSteps; step++) {
-			g.setColour(getColorForStep(row,step));
-			g.fillRoundedRectangle(stepRects[row][step], 10.f);
-		}
-	}
-	for (const auto& entry : buttonGridRects)
-	{
-		const juce::Rectangle<float>& buttonRect = entry.second;
-		const KeyButton& button = audioProcessor.keyButtonGrid.at(entry.first);
-		drawButton(g, buttonRect, button);
-	}
+   
+    paintQuarters(g);
+    paintSteps(g);
+    paintButtonGrid(g);
+    paintSideButtons(g);
+	
 
-	for (const auto& entry : sideButtonsRects)
-	{
-		const juce::Rectangle<float>& buttonRect = entry.second;
-		const KeyButton& button = audioProcessor.sideButtons.at(entry.first);
-		drawButton(g, buttonRect, button);
-	}
 	
 }
 
 
+void SIP_by_RolandosAudioProcessorEditor::paintView() {
+    juce::Graphics gr(view);
+    paintQuarters(gr);
+    paintSteps(gr);
+    paintButtonGrid(gr);
+    paintSideButtons(gr);
+}
+
+void  SIP_by_RolandosAudioProcessorEditor::paintQuarters(juce::Graphics& gr){
+    for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
+        gr.setColour(juce::Colours::darkgrey); // Example color
+        gr.fillRoundedRectangle(quarterColums[quarter], 10.f);
+        gr.setColour(juce::Colours::black);
+        // Draw the border around the rectangle
+        gr.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
+    }
+}
+void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
+    for (int step = 0; step < numSteps; step++) {
+    for (int row = 0; row < numRows; row++) {
+       
+            juce::DropShadow innerBottomRowShdw;
+            innerBottomRowShdw.colour = getColorForStep(row, step);
+            innerBottomRowShdw.radius = 10;
+            innerBottomRowShdw.drawForRectangle(gr, stepRects[row][step].getSmallestIntegerContainer());
+
+            gr.setColour(getColorForStep(row, step));
+            gr.fillRoundedRectangle(stepRects[row][step], 10.f);
+            gr.drawRoundedRectangle(stepRects[row][step], 10.f, 2);
+        }
+    }
+}
+
+void SIP_by_RolandosAudioProcessorEditor::paintButtonGrid(juce::Graphics& gr) {
+    for (const auto& entry : buttonGridRects)
+    {
+        const juce::Rectangle<float>& buttonRect = entry.second;
+        const KeyButton& button = audioProcessor.keyButtonGrid.at(entry.first);
+        drawButton(gr, buttonRect, button);
+    }
+}
+
+void SIP_by_RolandosAudioProcessorEditor::paintSideButtons(juce::Graphics& gr) {
+    for (const auto& entry : sideButtonsRects)
+    {
+        const juce::Rectangle<float>& buttonRect = entry.second;
+        const KeyButton& button = audioProcessor.sideButtons.at(entry.first);
+
+        drawButton(gr, buttonRect, button);
+    }
+
+}
 
 void SIP_by_RolandosAudioProcessorEditor::drawButton(juce::Graphics& g, const juce::Rectangle<float>& bounds, const KeyButton button)
 {
@@ -271,7 +307,7 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getColorForStep(int row,int st
 	else if (audioProcessor.getSequenceStep(row, step) > 0)
 		return juce::Colours::darkorange;
 	else if (audioProcessor.getCurrentStep() == step)
-		return juce::Colours::darkred;
+		return juce::Colour(255, 66, 82);
     else if (audioProcessor.getSelectedStep() == step)
        return juce::Colours::darkcyan;
    else
@@ -323,7 +359,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-        // Calculate the size of the grid rectangle
+    // Calculate the size of the grid rectangle
     // Calculate the size and position of the grid rectangle
     
     int mainContainerWidth = getWidth();
@@ -333,7 +369,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
     mainContainerRect.setBounds(mainContainerX, mainContainerY, mainContainerWidth, mainContainerHeight);
 
     int topRowWidth = mainContainerRect.getWidth() - 10;
-    int topRowHeight = mainContainerRect.getHeight() * 0.5 -10;
+    int topRowHeight = mainContainerRect.getHeight() * 0.45 -10;
     int topRowX = mainContainerRect.getX() + 5;
     int topRowY = mainContainerRect.getY() + 5;
     topRowRect.setBounds(topRowX, topRowY, topRowWidth, topRowHeight);
@@ -341,14 +377,14 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
 
 
     int bottomRowWidth = mainContainerRect.getWidth() -10;
-    int bottomRowHeight = mainContainerRect.getHeight() * 0.5 -10;
+    int bottomRowHeight = mainContainerRect.getHeight() * 0.55 -10;
     int bottomRowX = mainContainerRect.getX() +5;
     int bottomRowY = topRowRect.getY() + topRowRect.getHeight() + 5;
     bottomRowRect.setBounds(bottomRowX, bottomRowY, bottomRowWidth, bottomRowHeight);
     innerBottomRowRect = bottomRowRect.withTrimmedLeft(90)
-        .withTrimmedRight(90)
-        .withTrimmedTop(20)
-        .withTrimmedBottom(40);
+                                        .withTrimmedRight(90)
+                                        .withTrimmedTop(20)
+                                        .withTrimmedBottom(40);
   
 
     int effectsWidth = innerBottomRowRect.getWidth() /3;
@@ -388,6 +424,8 @@ void SIP_by_RolandosAudioProcessorEditor::setSequencerBounds(juce::Rectangle<flo
         int quarterX = sequencerColumnX + quarter * quarterWidth;
         int quarterY = sequencerColumnY;
         quarterRect.setBounds(quarterX, quarterY, quarterWidth, quarterHeight);
+        quarterRect.removeFromLeft(3);
+        quarterRect.removeFromRight(3);
         setQuarterBounds(quarterRect,quarter);
         quarterColums[quarter] = quarterRect;
     }
@@ -402,7 +440,7 @@ void SIP_by_RolandosAudioProcessorEditor::setQuarterBounds(juce::Rectangle<float
         int rowX = container.getX();
         int rowY = container.getY() + row * quarterRowHeight;
         quarterRowRect.setBounds(rowX, rowY, quarterRowWidth, quarterRowHeight);
-      
+        
         setQuarterStepsBounds(quarterRowRect.withTrimmedLeft(2).withTrimmedRight(2), row, quarter);
         quarterRowRects[row][quarter] = quarterRowRect;
     };
@@ -544,8 +582,6 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<f
 }
 
 void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
-  
-   
     float gridBoundX = container.getX();
     float gridBoundY = container.getY();
     float gridBoundWidth = container.getWidth() * 0.75;
@@ -625,7 +661,7 @@ void SIP_by_RolandosAudioProcessorEditor::timerCallback()
 {
 
     // Repaint the GUI
-    repaint();
+    paintView();
 }
 
 void SIP_by_RolandosAudioProcessorEditor::selectInstrument(int selectorIndex) {
