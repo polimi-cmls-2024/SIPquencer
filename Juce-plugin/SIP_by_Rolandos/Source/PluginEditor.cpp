@@ -128,25 +128,51 @@ SIP_by_RolandosAudioProcessorEditor::~SIP_by_RolandosAudioProcessorEditor()
 void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-    g.setColour(juce::Colours::darkblue); // Example color
+    g.setColour(juce::Colour(24,39,61)); // Example color
     g.fillRect(mainContainerRect);
 
     //g.setColour(juce::Colours::purple); // Example color
     //g.fillRoundedRectangle(topRowRect,20.f);
 
+
     g.setColour(juce::Colours::khaki); // Example color
     g.fillRoundedRectangle(bottomRowRect,30.f);
     g.setColour(juce::Colours::darkkhaki); // Example color
     g.drawRoundedRectangle(bottomRowRect, 30.f,3);
+    juce::DropShadow bottomRowShdw;
+    bottomRowShdw.colour = juce::Colours::darkgrey;
+    bottomRowShdw.radius = 30;
+
+    bottomRowShdw.drawForRectangle(g, bottomRowRect.getSmallestIntegerContainer()
+        .withTrimmedBottom(5)
+        .withTrimmedLeft(10)
+        .withTrimmedRight(10)
+        .withTrimmedTop(3));
+
+    g.setColour(juce::Colours::khaki); // Example color
+    g.fillRoundedRectangle(bottomRowRect
+        .withTrimmedBottom(5)
+        .withTrimmedLeft(10)
+        .withTrimmedRight(10)
+        .withTrimmedTop(3), 30.f);
+
+  
     g.setColour(juce::Colours::khaki); // Example color
     g.fillRoundedRectangle(topRowRect, 30.f);
     g.setColour(juce::Colours::darkkhaki); // Example color
     g.drawRoundedRectangle(topRowRect, 30.f, 3);
 
+
+    juce::DropShadow innerBottomRowShdw;
+    innerBottomRowShdw.colour = juce::Colours::darkgrey;
+    innerBottomRowShdw.radius = 8;
+    innerBottomRowShdw.drawForRectangle(g, effectsRect.getSmallestIntegerContainer().getUnion(keysContainer.getSmallestIntegerContainer()));
+
     g.setColour(juce::Colour(114,144,159)); // Example color
     g.fillRoundedRectangle(effectsRect.getUnion(keysContainer),8.f);
     g.setColour(juce::Colours::darkgrey); // Example color
     g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
+
 
 
     g.setColour(juce::Colours::khaki); // Example color
@@ -611,3 +637,4 @@ void SIP_by_RolandosAudioProcessorEditor::selectControl() {
     audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
 
 }
+
