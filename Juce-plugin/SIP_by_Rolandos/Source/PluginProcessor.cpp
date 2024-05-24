@@ -294,6 +294,19 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     }
                     break;
                 }
+                case Control::cutoff: {
+                    auto* cutoffParameter = apvts.getParameter("cutoff" + std::to_string(selectedSequence + 1));
+                    if (cutoffParameter != nullptr) {
+                        DBG(normalizedValue);
+                        //cutoffParameter->setValueNotifyingHost(normalizedValue);
+                        sender.send("/Control", 1, message.getControllerValue(), message.getChannel());
+
+                    }
+                    else {
+                        DBG("Error: release parameter not found in APVTS");
+                    }
+                    break;
+                }
                 default:
                    break;
             }
