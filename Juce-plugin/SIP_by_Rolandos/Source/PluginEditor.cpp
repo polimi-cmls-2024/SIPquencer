@@ -266,7 +266,7 @@ void SIP_by_RolandosAudioProcessorEditor::paintSideButtons(juce::Graphics& gr) {
         const juce::Rectangle<float>& buttonRect = entry.second;
         const KeyButton& button = audioProcessor.sideButtons.at(entry.first);
 
-        drawButton(gr, buttonRect, button);
+        drawSideButton(gr, buttonRect, button);
     }
 
 }
