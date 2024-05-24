@@ -402,7 +402,8 @@ void SIP_by_RolandosAudioProcessorEditor::setQuarterBounds(juce::Rectangle<float
         int rowX = container.getX();
         int rowY = container.getY() + row * quarterRowHeight;
         quarterRowRect.setBounds(rowX, rowY, quarterRowWidth, quarterRowHeight);
-        setQuarterStepsBounds(quarterRowRect,row,quarter);
+      
+        setQuarterStepsBounds(quarterRowRect.withTrimmedLeft(2).withTrimmedRight(2), row, quarter);
         quarterRowRects[row][quarter] = quarterRowRect;
     };
 
