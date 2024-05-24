@@ -325,13 +325,13 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
     }
     else {
         switch (audioProcessor.getSequencerState()) {
-        case audioProcessor.DEF:
+        case SIP_by_RolandosAudioProcessor::DEF:
             return juce::Colours::black;
-        case audioProcessor.R:
+        case SIP_by_RolandosAudioProcessor::R:
             return juce::Colours::dodgerblue;
-        case audioProcessor.RP:
+        case SIP_by_RolandosAudioProcessor::RP:
             return juce::Colours::blanchedalmond;
-        case audioProcessor.RRP:
+        case SIP_by_RolandosAudioProcessor::RRP:
             return juce::Colours::coral;
         }
     }
@@ -341,13 +341,13 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
 juce::String SIP_by_RolandosAudioProcessorEditor::getButtonLabel(const KeyButton button) const
 {
     switch (audioProcessor.getSequencerState()) {
-    case audioProcessor.DEF:
+    case SIP_by_RolandosAudioProcessor::DEF:
         return button.defLabel;
-    case audioProcessor.R:
+    case SIP_by_RolandosAudioProcessor::R:
         return button.Rlabel;
-    case audioProcessor.RP:
+    case SIP_by_RolandosAudioProcessor::RP:
         return button.RPlabel;
-    case audioProcessor.RRP:
+    case SIP_by_RolandosAudioProcessor:: RRP:
         return button.RRPlabel;
     default:
         DBG("Invalid state");
