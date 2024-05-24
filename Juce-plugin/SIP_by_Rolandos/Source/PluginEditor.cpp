@@ -173,7 +173,10 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(juce::Colours::darkgrey); // Example color
     g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
 
-
+    g.setColour(juce::Colours::azure);
+    g.drawRoundedRectangle(keysContainer, 8.f, 3);
+    g.setColour(juce::Colours::azure);
+    g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
 
     g.setColour(juce::Colours::khaki); // Example color
     g.fillRect(controlsColumn);
@@ -541,21 +544,20 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<f
 
 void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
   
-    juce::Rectangle<float> gridBounds;
+   
     float gridBoundX = container.getX();
     float gridBoundY = container.getY();
     float gridBoundWidth = container.getWidth() * 0.75;
     float gridBoundHeight = container.getHeight();
-    gridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
-    juce::Rectangle<float> sideButtonBounds;
+    buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
     float sideButtonBoundsX = container.getX() + gridBoundWidth;
-    float sideButtonBoundsY = container.getY();
+    float sideButtonBoundsY = container.getY() + (container.getHeight() * 0.5);
     float sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
-    float sideButtonBoundsHeight = container.getHeight() * 0.25;
+    float sideButtonBoundsHeight = container.getHeight()* 0.5;
     sideButtonBounds.setBounds(sideButtonBoundsX, sideButtonBoundsY, sideButtonBoundsWidth, sideButtonBoundsHeight);
 
     // Draw the button grid in the gridBounds rectangle
-    setButtonGridBounds(gridBounds);
+    setButtonGridBounds(buttonGridBounds);
 
     // Draw the side buttons in the sideButtonBounds rectangle
     setSideButtonBounds(sideButtonBounds);

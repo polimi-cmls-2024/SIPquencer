@@ -60,7 +60,7 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
         juce::String Rlabel = RstateSideLabels[i];
         juce::String RPlabel = RPstateSideLabels[i];
         juce::String RRPlabel = RRPstateSideLabels[i];
-        sideButtons.insert({ key,KeyButton(key,i,1,defLabel,Rlabel,RPlabel,RRPlabel) });      
+        sideButtons.insert({ key,KeyButton(key,i,0,defLabel,Rlabel,RPlabel,RRPlabel) });      
     };
 }
 

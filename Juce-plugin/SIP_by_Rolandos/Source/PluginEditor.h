@@ -108,6 +108,8 @@ private:
     juce::Rectangle<int> reverbContainer;
     juce::Rectangle<int> delayContainer;
 
+    juce::Rectangle<float> buttonGridBounds;
+    juce::Rectangle<float> sideButtonBounds;
 
 
     std::map<int, juce::Rectangle<float>> buttonGridRects;
