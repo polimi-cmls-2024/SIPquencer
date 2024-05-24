@@ -51,14 +51,18 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
         attackSlider->setRange(0,1);
         attackSlider->setNumDecimalPlacesToDisplay(2);
         attackSliders[row] = attackSlider;
+        attackAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts, "attack" + std::to_string(row + 1), *attackSlider));
 
         juce::Slider* releaseSlider = new juce::Slider();
         releaseSlider->setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
         releaseSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 15);
         releaseSlider->setRange(0, 1);
         releaseSlider->setNumDecimalPlacesToDisplay(2);
-
         releaseSliders[row] = releaseSlider;
+        releaseAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts, "release" + std::to_string(row + 1), *releaseSlider));
+
 
         juce::Slider* cutoffSlider = new juce::Slider();
         cutoffSlider->setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
@@ -66,19 +70,27 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
         cutoffSlider->setRange(20, 20000);
         cutoffSlider->setNumDecimalPlacesToDisplay(2);
         cutoffSliders[row] = cutoffSlider;
-
+        cutoffAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts, "cutoff" + std::to_string(row + 1), *cutoffSlider));
     }
+
+
 
     reverbSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     reverbSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 15);
     reverbSlider.setRange(0, 1);
     reverbSlider.setNumDecimalPlacesToDisplay(2);
+    reverbAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts, "reverb", reverbSlider);
+
 
 
     delaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     delaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 15);
     delaySlider.setRange(0, 1);
     delaySlider.setNumDecimalPlacesToDisplay(2);
+    delayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts, "delay", delaySlider);
 
 
     effectSelector.addItem("Attack", 1);
@@ -93,9 +105,10 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
         selectControl();
         };
     effectSelector.setSelectedId(1);
+    audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
 
 
-    setSize(750, 600);
+    setSize(800, 600);
 
 }
 
@@ -115,58 +128,66 @@ SIP_by_RolandosAudioProcessorEditor::~SIP_by_RolandosAudioProcessorEditor()
 void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-    g.setColour(juce::Colours::blue); // Example color
+    g.setColour(juce::Colours::darkblue); // Example color
     g.fillRect(mainContainerRect);
 
-    g.setColour(juce::Colours::purple); // Example color
-    g.fillRect(topRowRect);
+    //g.setColour(juce::Colours::purple); // Example color
+    //g.fillRoundedRectangle(topRowRect,20.f);
 
-    g.setColour(juce::Colours::pink); // Example color
-    g.fillRect(bottomRowRect);
+    g.setColour(juce::Colours::khaki); // Example color
+    g.fillRoundedRectangle(bottomRowRect,30.f);
+    g.setColour(juce::Colours::darkkhaki); // Example color
+    g.drawRoundedRectangle(bottomRowRect, 30.f,3);
+    g.setColour(juce::Colours::khaki); // Example color
+    g.fillRoundedRectangle(topRowRect, 30.f);
+    g.setColour(juce::Colours::darkkhaki); // Example color
+    g.drawRoundedRectangle(topRowRect, 30.f, 3);
 
-    g.setColour(juce::Colours::orange); // Example color
-    g.fillRect(effectsRect);
+    g.setColour(juce::Colour(114,144,159)); // Example color
+    g.fillRoundedRectangle(effectsRect.getUnion(keysContainer),8.f);
+    g.setColour(juce::Colours::darkgrey); // Example color
+    g.drawRoundedRectangle(effectsRect.getUnion(keysContainer), 8.f, 3);
 
-    g.setColour(juce::Colours::yellow); // Example color
-    g.fillRect(keysContainer);
 
-    g.setColour(juce::Colours::red); // Example color
+    g.setColour(juce::Colours::khaki); // Example color
     g.fillRect(controlsColumn);
 
     for (int row = 0; row < numRows; row++) {
-        g.setColour(juce::Colours::rebeccapurple); // Example color
-		g.fillRect(controlRows[row]);
+        g.setColour(juce::Colours::darkkhaki); // Example color
+		g.fillRoundedRectangle(controlRows[row],5.f);
+        g.setColour(juce::Colours::darkgrey); // Example color
+        g.drawRoundedRectangle(controlRows[row], 5.f, 2);
         g.setColour(juce::Colours::cadetblue); // Example color
 
 		g.fillRect(selectorContainers[row]);
-        g.setColour(juce::Colours::coral); // Example color
-		g.fillRect(attackContainers[row]);
-        g.setColour(juce::Colours::lightskyblue); // Example color
-		g.fillRect(releaseContainers[row]);
+  //      g.setColour(juce::Colours::coral); // Example color
+		//g.fillRoundedRectangle(attackContainers[row],5.f);
+  //      g.setColour(juce::Colours::lightskyblue); // Example color
+		//g.fillRoundedRectangle(releaseContainers[row],5.f);
 	}
     for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
-        g.setColour(juce::Colours::azure); // Example color
-        g.fillRect(quarterColums[quarter]);
+        g.setColour(juce::Colours::darkgrey); // Example color
+        g.fillRoundedRectangle(quarterColums[quarter], 10.f);
         g.setColour(juce::Colours::black);
         // Draw the border around the rectangle
-        g.drawRect(quarterColums[quarter], 3);
+        g.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
 	}
     for (int row = 0; row < numRows; row++) {
 		for (int step = 0; step < numSteps; step++) {
 			g.setColour(getColorForStep(row,step));
-			g.fillRect(stepRects[row][step]);
+			g.fillRoundedRectangle(stepRects[row][step], 10.f);
 		}
 	}
 	for (const auto& entry : buttonGridRects)
 	{
-		const juce::Rectangle<int>& buttonRect = entry.second;
+		const juce::Rectangle<float>& buttonRect = entry.second;
 		const KeyButton& button = audioProcessor.keyButtonGrid.at(entry.first);
 		drawButton(g, buttonRect, button);
 	}
 
 	for (const auto& entry : sideButtonsRects)
 	{
-		const juce::Rectangle<int>& buttonRect = entry.second;
+		const juce::Rectangle<float>& buttonRect = entry.second;
 		const KeyButton& button = audioProcessor.sideButtons.at(entry.first);
 		drawButton(g, buttonRect, button);
 	}
@@ -175,7 +196,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
 
 
 
-void SIP_by_RolandosAudioProcessorEditor::drawButton(juce::Graphics& g, const juce::Rectangle<int>& bounds, const KeyButton button)
+void SIP_by_RolandosAudioProcessorEditor::drawButton(juce::Graphics& g, const juce::Rectangle<float>& bounds, const KeyButton button)
 {
     // Set color based on button state
 
@@ -184,17 +205,17 @@ void SIP_by_RolandosAudioProcessorEditor::drawButton(juce::Graphics& g, const ju
    
 
     // Draw button background
-    g.fillRect(bounds);
+    g.fillRoundedRectangle(bounds,5.f);
 
-    // Draw button border
-    g.setColour(juce::Colours::purple);
-    g.drawRect(bounds, 1); // Border width is set to 1 pixel
+    //// Draw button border
+    //g.setColour(juce::Colours::purple);
+    //g.drawRect(bounds, 1); // Border width is set to 1 pixel
 
     // Draw button label (for demonstration purposes)
-    g.setColour(juce::Colours::black);
+    g.setColour(juce::Colours::white);
     g.setFont(juce::Font(16.0f));
     juce::String label = getButtonLabel(button);
-    g.drawFittedText(label, bounds, juce::Justification::centred, 1);
+    g.drawFittedText(label, bounds.getSmallestIntegerContainer(), juce::Justification::centred, 1);
 }
 
 juce::Colour SIP_by_RolandosAudioProcessorEditor::getRowColorForRow(int row) const
@@ -240,7 +261,7 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
     else {
         switch (audioProcessor.getSequencerState()) {
         case audioProcessor.DEF:
-            return juce::Colours::grey;
+            return juce::Colours::black;
         case audioProcessor.R:
             return juce::Colours::dodgerblue;
         case audioProcessor.RP:
@@ -287,7 +308,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
     int topRowX = mainContainerRect.getX() + 5;
     int topRowY = mainContainerRect.getY() + 5;
     topRowRect.setBounds(topRowX, topRowY, topRowWidth, topRowHeight);
-    setSequencerBounds(topRowRect);
+    setSequencerBounds(topRowRect.reduced(20));
 
 
     int bottomRowWidth = mainContainerRect.getWidth() -10;
@@ -295,25 +316,29 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
     int bottomRowX = mainContainerRect.getX() +5;
     int bottomRowY = topRowRect.getY() + topRowRect.getHeight() + 5;
     bottomRowRect.setBounds(bottomRowX, bottomRowY, bottomRowWidth, bottomRowHeight);
+    innerBottomRowRect = bottomRowRect.withTrimmedLeft(90)
+        .withTrimmedRight(90)
+        .withTrimmedTop(20)
+        .withTrimmedBottom(40);
   
 
-    int effectsWidth = bottomRowRect.getWidth() /3;
-    int effectsHeight = bottomRowRect.getHeight();
-    int effectsX = bottomRowRect.getX();
-    int effectsY = bottomRowRect.getY();
+    int effectsWidth = innerBottomRowRect.getWidth() /3;
+    int effectsHeight = innerBottomRowRect.getHeight();
+    int effectsX = innerBottomRowRect.getX();
+    int effectsY = innerBottomRowRect.getY();
     effectsRect.setBounds(effectsX, effectsY, effectsWidth, effectsHeight);
     setEffectsBounds(effectsRect);
 
-    int keysContainerWidth = bottomRowRect.getWidth()- effectsWidth;
-    int keysContainerHeight = bottomRowRect.getHeight();
-    int keysContainerX = effectsRect.getX() + effectsWidth;
-    int keysContainerY = bottomRowRect.getY();
+    int keysContainerWidth = innerBottomRowRect.getWidth()- effectsWidth;
+    int keysContainerHeight = innerBottomRowRect.getHeight();
+    int keysContainerX = innerBottomRowRect.getX() + effectsWidth;
+    int keysContainerY = innerBottomRowRect.getY();
     keysContainer.setBounds(keysContainerX, keysContainerY, keysContainerWidth, keysContainerHeight);
     setKeyboardBounds(keysContainer);
 
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setSequencerBounds(juce::Rectangle<int> container)
+void SIP_by_RolandosAudioProcessorEditor::setSequencerBounds(juce::Rectangle<float> container)
 {
     int controlsColumnWidth = container.getWidth() *0.25;
     int controlsColumnHeight = container.getHeight();
@@ -328,7 +353,7 @@ void SIP_by_RolandosAudioProcessorEditor::setSequencerBounds(juce::Rectangle<int
     int sequencerColumnX = controlsColumn.getX() + controlsColumn.getWidth();
     int sequencerColumnY = container.getY();
     for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
-        juce::Rectangle<int> quarterRect;
+        juce::Rectangle<float> quarterRect;
         int quarterWidth = sequencerColumnWidth / 4;
         int quarterHeight = sequencerColumnHeight;
         int quarterX = sequencerColumnX + quarter * quarterWidth;
@@ -339,10 +364,10 @@ void SIP_by_RolandosAudioProcessorEditor::setSequencerBounds(juce::Rectangle<int
     }
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setQuarterBounds(juce::Rectangle<int> container,int quarter) {
+void SIP_by_RolandosAudioProcessorEditor::setQuarterBounds(juce::Rectangle<float> container,int quarter) {
 
     for (int row = 0; row < numRows; row++) {
-        juce::Rectangle<int> quarterRowRect;
+        juce::Rectangle<float> quarterRowRect;
         int quarterRowWidth = container.getWidth();
         int quarterRowHeight = container.getHeight() / numRows;
         int rowX = container.getX();
@@ -354,9 +379,9 @@ void SIP_by_RolandosAudioProcessorEditor::setQuarterBounds(juce::Rectangle<int> 
 
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setQuarterStepsBounds(juce::Rectangle<int> container, int row, int quarter) {
+void SIP_by_RolandosAudioProcessorEditor::setQuarterStepsBounds(juce::Rectangle<float> container, int row, int quarter) {
     for (int step = 0; step < numSteps / 4; step++) {
-        juce::Rectangle<int> stepContainerRect;
+        juce::Rectangle<float> stepContainerRect;
         int stepContinerWidth = container.getWidth() / 4;
         int stepContainerHeight = container.getHeight();
         int stepContainerX = container.getX() + step * stepContinerWidth;
@@ -366,20 +391,20 @@ void SIP_by_RolandosAudioProcessorEditor::setQuarterStepsBounds(juce::Rectangle<
     }
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setStepBounds(juce::Rectangle<int> container, int row,int step) {
-    juce::Rectangle<int> stepRect;
-    int stepWidth = container.getWidth() - 10;
-    int stepHeight = container.getHeight() - 10;
-    int stepX = container.getX() + 5;
-    int stepY = container.getY() + 5;
+void SIP_by_RolandosAudioProcessorEditor::setStepBounds(juce::Rectangle<float> container, int row,int step) {
+    juce::Rectangle<float> stepRect;
+    int stepWidth = container.getWidth() - 5;
+    int stepHeight = stepWidth;
+    int stepX = container.getCentreX() - stepWidth*0.5;
+    int stepY = container.getCentreY() - stepHeight * 0.5;
     stepRect.setBounds(stepX, stepY, stepWidth, stepHeight);
     stepRects[row][step] = stepRect;
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setControlsBounds(juce::Rectangle<int> container) {
+void SIP_by_RolandosAudioProcessorEditor::setControlsBounds(juce::Rectangle<float> container) {
     int margin = 5;
     for (int row = 0; row < numRows; ++row) {
-        juce::Rectangle<int> rowRect;
+        juce::Rectangle<float> rowRect;
 		int rowWidth = container.getWidth();
 		int rowHeight = container.getHeight() / numRows;
 		int rowX = container.getX();
@@ -391,76 +416,74 @@ void SIP_by_RolandosAudioProcessorEditor::setControlsBounds(juce::Rectangle<int>
     }
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setControlBounds(juce::Rectangle<int> container,int row) {
-    int margin = 2;
-    juce::Rectangle<int> selectorContainer;
-    int selectorContainerWidth = container.getWidth();
-    int selectorContainerHeight = container.getHeight() * 0.3;
-    int selectorContainerX = container.getX();
-    int selectorContainerY = container.getY();
+void SIP_by_RolandosAudioProcessorEditor::setControlBounds(juce::Rectangle<float> container,int row) {
+    float margin = 2;
+    juce::Rectangle<float> selectorContainer;
+    float selectorContainerWidth = container.getWidth();
+    float selectorContainerHeight = container.getHeight() * 0.3;
+    float selectorContainerX = container.getX();
+    float selectorContainerY = container.getY();
     selectorContainer.setBounds(selectorContainerX, selectorContainerY, selectorContainerWidth, selectorContainerHeight);
     selectorContainer.reduce(margin, margin);
     selectorContainers[row] = selectorContainer;
     if (instrSelectors.find(row) != instrSelectors.end()) {
-        instrSelectors[row]->setBounds(selectorContainer); // Corrected
+        instrSelectors[row]->setBounds(selectorContainer.getSmallestIntegerContainer()); // Corrected
         addAndMakeVisible(instrSelectors[row]); // Add Slider to the editor
 
     }
 
-    juce::Rectangle<int> attackContainer;
-    int attackContainerWidth = container.getWidth()/3;
-    int attackContainerHeight = container.getHeight() * 0.7;
-    int attackContainerX = container.getX();
-    int attackContainerY = container.getY() + selectorContainerHeight;
+    juce::Rectangle<float> attackContainer;
+    float attackContainerWidth = container.getWidth()/3;
+    float attackContainerHeight = container.getHeight() * 0.7;
+    float attackContainerX = container.getX();
+    float attackContainerY = container.getY() + selectorContainerHeight;
     attackContainer.setBounds(attackContainerX, attackContainerY, attackContainerWidth, attackContainerHeight);
     attackContainers[row] = attackContainer;
     if (attackSliders.find(row) != attackSliders.end()) {
-        attackSliders[row]->setBounds(attackContainer); // Corrected
+        attackSliders[row]->setBounds(attackContainer.getSmallestIntegerContainer()); // Corrected
         addAndMakeVisible(attackSliders[row]); // Add Slider to the editor
 
     }
 
 
-    juce::Rectangle<int> releaseContainer;
-    int releaseContainerWidth = container.getWidth() / 3;
-    int releaseContainerHeight = container.getHeight() * 0.7;
-    int releaseContainerX = container.getX() + attackContainerWidth;
-    int releaseContainerY = container.getY() + selectorContainerHeight;
+    juce::Rectangle<float> releaseContainer;
+    float releaseContainerWidth = container.getWidth() / 3;
+    float releaseContainerHeight = container.getHeight() * 0.7;
+    float releaseContainerX = container.getX() + attackContainerWidth;
+    float releaseContainerY = container.getY() + selectorContainerHeight;
     releaseContainer.setBounds(releaseContainerX, releaseContainerY, releaseContainerWidth, releaseContainerHeight);
     releaseContainers[row] = releaseContainer;
     if (releaseSliders.find(row) != releaseSliders.end()) {
-        releaseSliders[row]->setBounds(releaseContainer); // Corrected
+        releaseSliders[row]->setBounds(releaseContainer.getSmallestIntegerContainer()); // Corrected
         addAndMakeVisible(releaseSliders[row]); // Add Slider to the editor
     }
 
-    juce::Rectangle<int> cutoffContainer;
-    int cutoffContainerWidth = container.getWidth() / 3;
-    int cutoffContainerHeight = container.getHeight() * 0.7;
-    int cutoffContainerX = releaseContainerX + releaseContainerWidth;
-    int cutoffContainerY = container.getY() + selectorContainerHeight;
+    juce::Rectangle<float> cutoffContainer;
+    float cutoffContainerWidth = container.getWidth() / 3;
+    float cutoffContainerHeight = container.getHeight() * 0.7;
+    float cutoffContainerX = releaseContainerX + releaseContainerWidth;
+    float cutoffContainerY = container.getY() + selectorContainerHeight;
     cutoffContainer.setBounds(cutoffContainerX, cutoffContainerY, cutoffContainerWidth, cutoffContainerHeight);
     cutoffContainers[row] = cutoffContainer;
     if (cutoffSliders.find(row) != cutoffSliders.end()) {   
-        cutoffSliders[row]->setBounds(cutoffContainer); // Corrected
+        cutoffSliders[row]->setBounds(cutoffContainer.getSmallestIntegerContainer()); // Corrected
         addAndMakeVisible(cutoffSliders[row]); // Add Slider to the editor
     }
 
 }
 
-
-
-void SIP_by_RolandosAudioProcessorEditor::setEffectsBounds(juce::Rectangle<int> container) {
+void SIP_by_RolandosAudioProcessorEditor::setEffectsBounds(juce::Rectangle<float> container) {
 
     // Define the margin to reduce the size of the inner rectangle
-    int margin = 5;
+    float margin = 5;
 
     // Create a smaller rectangle inside the container bounds
-    juce::Rectangle<int> innerContainer = container.reduced(margin);
+    juce::Rectangle<float> innerContainer = container.reduced(margin);
     juce::Rectangle<int> effectSelectorContainer;
     effectSelectorContainer.setBounds(innerContainer.getX(), innerContainer.getY(), innerContainer.getWidth(), innerContainer.getHeight() * 0.2);
 
 
-    juce::Rectangle<int> knobsContainer;
+    juce::Rectangle<float> knobsContainer;
     knobsContainer.setBounds(innerContainer.getX(), innerContainer.getY() + effectSelectorContainer.getHeight(), innerContainer.getWidth(), innerContainer.getHeight() * 0.8);
 
     effectSelectorContainer.reduce(margin, margin);
@@ -471,12 +494,12 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectsBounds(juce::Rectangle<int> 
 
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<int> container) {
+void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<float> container) {
     // Define the margin to reduce the size of the inner rectangle
-    int margin = 5;
+    float margin = 5;
 
     // Create a smaller rectangle inside the container bounds
-    juce::Rectangle<int> innerContainer = container.reduced(margin);
+    juce::Rectangle<float> innerContainer = container.reduced(margin);
     reverbContainer.setBounds(innerContainer.getX(), innerContainer.getY(), innerContainer.getWidth() * 0.5, innerContainer.getHeight() * 0.5);
 
 
@@ -490,19 +513,19 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<i
 
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<int> container) {
+void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
   
-    juce::Rectangle<int> gridBounds;
-    int gridBoundX = container.getX();
-    int gridBoundY = container.getY();
-    int gridBoundWidth = container.getWidth() * 0.75;
-    int gridBoundHeight = container.getHeight();
+    juce::Rectangle<float> gridBounds;
+    float gridBoundX = container.getX();
+    float gridBoundY = container.getY();
+    float gridBoundWidth = container.getWidth() * 0.75;
+    float gridBoundHeight = container.getHeight();
     gridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
-    juce::Rectangle<int> sideButtonBounds;
-    int sideButtonBoundsX = container.getX() + gridBoundWidth;
-    int sideButtonBoundsY = container.getY();
-    int sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
-    int sideButtonBoundsHeight = container.getHeight() * 0.25;
+    juce::Rectangle<float> sideButtonBounds;
+    float sideButtonBoundsX = container.getX() + gridBoundWidth;
+    float sideButtonBoundsY = container.getY();
+    float sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
+    float sideButtonBoundsHeight = container.getHeight() * 0.25;
     sideButtonBounds.setBounds(sideButtonBoundsX, sideButtonBoundsY, sideButtonBoundsWidth, sideButtonBoundsHeight);
 
     // Draw the button grid in the gridBounds rectangle
@@ -512,14 +535,14 @@ void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<int>
     setSideButtonBounds(sideButtonBounds);
 }
 
-void SIP_by_RolandosAudioProcessorEditor::setButtonGridBounds(const juce::Rectangle<int>& gridBounds)
+void SIP_by_RolandosAudioProcessorEditor::setButtonGridBounds(const juce::Rectangle<float>& gridBounds)
 {
-    int buttonSize = 50; // Define the size of each button
-    int spacing = 10; // Define the spacing between buttons
+    float buttonSize = 40; // Define the size of each button
+    float spacing = 15; // Define the spacing between buttons
 
     // Determine the number of rows and columns
-    int numRows = 0;
-    int numCols = 0;
+    float numRows = 0;
+    float numCols = 0;
     for (const auto& entry : audioProcessor.keyButtonGrid)
     {
         const KeyButton& button = entry.second;
@@ -528,12 +551,12 @@ void SIP_by_RolandosAudioProcessorEditor::setButtonGridBounds(const juce::Rectan
     }
 
     // Calculate the total size of the button grid
-    int totalGridWidth = numCols * buttonSize + (numCols - 1) * spacing;
-    int totalGridHeight = numRows * buttonSize + (numRows - 1) * spacing;
+    float totalGridWidth = numCols * buttonSize + (numCols - 1) * spacing;
+    float totalGridHeight = numRows * buttonSize + (numRows - 1) * spacing;
 
     // Calculate the offsets to center the grid
-    int xOffset = (gridBounds.getWidth() - totalGridWidth) / 2;
-    int yOffset = (gridBounds.getHeight() - totalGridHeight) / 2;
+    float xOffset = (gridBounds.getWidth() - totalGridWidth) / 2;
+    float yOffset = (gridBounds.getHeight() - totalGridHeight) / 2;
 
     // Iterate over buttons in the map and set their bounds
     for (const auto& entry : audioProcessor.keyButtonGrid)
@@ -541,35 +564,33 @@ void SIP_by_RolandosAudioProcessorEditor::setButtonGridBounds(const juce::Rectan
         const KeyButton& button = entry.second;
 
         // Calculate the position of the button based on row and column
-        int xPos = gridBounds.getX() + xOffset + button.col * (buttonSize + spacing);
-        int yPos = gridBounds.getY() + yOffset + button.row * (buttonSize + spacing);
+        float xPos = gridBounds.getX() + xOffset + button.col * (buttonSize + spacing);
+        float yPos = gridBounds.getY() + yOffset + button.row * (buttonSize + spacing);
 
         // Define the bounds for the button
-        juce::Rectangle<int> buttonBounds(xPos, yPos, buttonSize, buttonSize);
+        juce::Rectangle<float> buttonBounds(xPos, yPos, buttonSize, buttonSize);
 
         // Store the bounds in the buttonGridRects map
         buttonGridRects[entry.first] = buttonBounds;
     }
 }
 
-
-void SIP_by_RolandosAudioProcessorEditor::setSideButtonBounds(const juce::Rectangle<int>& sideButtonsContainer)
+void SIP_by_RolandosAudioProcessorEditor::setSideButtonBounds(const juce::Rectangle<float>& sideButtonsContainer)
 {
-    int buttonSize = 50; // Define the size of each button
-    int spacing = 10; // Define the spacing between buttons
+    float buttonSize = 50; // Define the size of each button
+    float spacing = 10; // Define the spacing between buttons
     // Assuming we have two side buttons to draw
     for (const auto& entry : audioProcessor.sideButtons)
     {
         const KeyButton& button = entry.second;
-        int xPos = sideButtonsContainer.getX() + button.col * (buttonSize + spacing);
-        int yPos = sideButtonsContainer.getY() + button.row * (buttonSize + spacing);
+        float xPos = sideButtonsContainer.getX() + button.col * (buttonSize + spacing);
+        float yPos = sideButtonsContainer.getY() + button.row * (buttonSize + spacing);
 
         // Define the bounds for the button
-        juce::Rectangle<int> buttonBounds(xPos, yPos, buttonSize, buttonSize);
+        juce::Rectangle<float> buttonBounds(xPos, yPos, buttonSize, buttonSize);
         sideButtonsRects[entry.first] = buttonBounds;
     }
 }
-
 
 void SIP_by_RolandosAudioProcessorEditor::timerCallback()
 {
@@ -580,11 +601,13 @@ void SIP_by_RolandosAudioProcessorEditor::timerCallback()
 
 void SIP_by_RolandosAudioProcessorEditor::selectInstrument(int selectorIndex) {
     DBG("selectorIndex: ", selectorIndex);
-    DBG("selectedInstr: ", instrSelectors.operator[](selectorIndex).getSelectedId());
-
+    DBG("selectedInstr: ", instrSelectors[selectorIndex]->getSelectedId());
+    audioProcessor.setSelectedInstrument(selectorIndex, instrSelectors[selectorIndex]->getSelectedId());
 
 }
 
 void SIP_by_RolandosAudioProcessorEditor::selectControl() {
     DBG("selected control: ", effectSelector.getSelectedId());
+    audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
+
 }

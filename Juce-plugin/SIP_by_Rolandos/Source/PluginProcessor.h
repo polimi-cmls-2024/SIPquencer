@@ -49,7 +49,22 @@ public:
         RP,   // RP state
         RRP   // RRP state
     };
+    enum Control {
+        attack,
+        release,
+        cutoff,
+        delay,
+        reverb
+    };
 
+    const std::map<juce::String, Control> controlMap = {
+    {"attack", Control::attack},
+    {"release", Control::release},
+    {"cutoff", Control::cutoff},
+    {"delay", Control::delay},
+	{"reverb", Control::reverb}
+    // Add more mappings here
+    };
     static constexpr int numSteps = 16; // Define the number of steps
     static constexpr int seqRows = 3; // Define the number of sequences
 
@@ -83,14 +98,12 @@ public:
 
 
     const int transposeOffset = 64;
-
-    using RAPPtr = juce::RangedAudioParameter*;
-    using RAPPtrArray = std::array<RAPPtr, param::NumParams>;
-
+    Control selectedControl;
 
  
-
-   
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState apvts{*this,nullptr,"Parameters",createParameterLayout()};
+    
 
 
     //==============================================================================
@@ -146,6 +159,9 @@ public:
     int getSelectedSequence() const { return selectedSequence; }
     unsigned char getSequencerState() const { return state; }
     void updateTranspose(const int transpose);
+
+    void setSelectedControl(const juce::String control);
+    void setSelectedInstrument(int channel, int selectedId);
 
 
     const std::array<int, 2> getSideKeys() const { return sideKeys; }

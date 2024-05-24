@@ -238,8 +238,64 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 		}
         else if (message.isController()) {
             DBG("Received MIDI controller: " << message.getDescription());
-            sender.send("/Control", message.getControllerValue(), message.getControllerNumber());
+            sender.send("/Control", message.getControllerNumber(), message.getControllerValue(),message.getChannel());
+            int value = message.getControllerValue();
+            DBG(value);
+            float normalizedValue = static_cast<float>(value) / 127.0f;
 
+            switch (selectedControl) {
+                 case Control::reverb:{
+                    auto* reverbParameter = apvts.getParameter("reverb");
+                    if (reverbParameter != nullptr) {
+                        DBG(normalizedValue);
+                        reverbParameter->setValueNotifyingHost(normalizedValue);
+
+                    }
+                    else {
+                        DBG("Error: Reverb parameter not found in APVTS");
+                    }
+                    break;
+                }
+                      
+                case Control::delay: {
+                    auto* delayParameter = apvts.getParameter("delay");
+                    if (delayParameter != nullptr) {
+                        DBG(normalizedValue);
+                        delayParameter->setValueNotifyingHost(normalizedValue);
+
+                    }
+                    else {
+                        DBG("Error: Delay parameter not found in APVTS");
+                    }
+                    break;
+                }
+                case Control::attack:{
+                    auto* attackParameter = apvts.getParameter("attack"+ std::to_string(selectedSequence + 1));
+                    if (attackParameter != nullptr) {
+                        DBG(normalizedValue);
+                        attackParameter->setValueNotifyingHost(normalizedValue);
+
+                    }
+                    else {
+                        DBG("Error: attack parameter not found in APVTS");
+                    }
+                    break;
+                }
+                case Control::release: {
+                    auto* releaseParameter = apvts.getParameter("release" + std::to_string(selectedSequence + 1));
+                    if (releaseParameter != nullptr) {
+                        DBG(normalizedValue);
+                        releaseParameter->setValueNotifyingHost(normalizedValue);
+
+                    }
+                    else {
+                        DBG("Error: release parameter not found in APVTS");
+                    }
+                    break;
+                }
+                default:
+                   break;
+            }
         }
         else if (message.isSysEx()) {
           
@@ -329,6 +385,87 @@ void SIP_by_RolandosAudioProcessor::setStateInformation (const void* data, int s
             apvts.replaceState(juce::ValueTree::fromXml(*xmlState));*/
 }
 
+juce::AudioProcessorValueTreeState::ParameterLayout SIP_by_RolandosAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    // Add the groups to the layout
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "attack1",  1 },
+        "Attack",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+    // Add the groups to the layout
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "attack2",  1 },
+        "Attack",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+
+    // Add the groups to the layout
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "attack3",  1 },
+        "Attack",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "release1",  1 },
+        "Release",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "release2",  1 },
+        "Release",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "release3",  1 },
+        "Release",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "cutoff1",  1 },
+        "Cutoff",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
+        2000.f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "cutoff2",  1 },
+        "Cutoff",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
+        2000.f));
+
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "cutoff3",  1 },
+        "Cutoff",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
+        2000.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>( 
+        juce::ParameterID{ "reverb",  1 },
+        "Reverb",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "delay",  1 },
+        "Delay",
+        juce::NormalisableRange<float>(0.001f, 1.f, 0.001f, 1.f),
+        0.1f));
+
+
+
+    return layout;
+}
+
+        
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
@@ -371,7 +508,6 @@ void SIP_by_RolandosAudioProcessor::pressKey(const int key)
 		DBG("Invalid key");
 	}
 }
-
 
 void SIP_by_RolandosAudioProcessor::releaseKey(int key)
 {
@@ -432,4 +568,21 @@ void SIP_by_RolandosAudioProcessor::updateTranspose(const int transpose) {
         //DBG("New label: " << button.defLabel);
         button.RPlabel = button.defLabel;
     }
+}
+
+void SIP_by_RolandosAudioProcessor::setSelectedControl(const juce::String control) {
+    auto cont = controlMap.find(control);
+    if (cont != controlMap.end()) {
+        selectedControl = cont->second;
+    }
+    else {
+        DBG("control not found in controlMap");
+    }
+}
+
+void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int selectedInstr) {
+    sender.send("/ProgramChange", channel, selectedInstr);
+    DBG("channel", channel);
+    DBG("selectedInstr", selectedInstr);
+
 }
