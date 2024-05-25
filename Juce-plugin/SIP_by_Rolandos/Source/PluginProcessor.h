@@ -37,6 +37,7 @@ struct KeyButton
 /**
 */
 class SIP_by_RolandosAudioProcessor  : public juce::AudioProcessor
+
 {
 public:
     //==============================================================================
@@ -164,7 +165,7 @@ public:
     void setSelectedControl(const juce::String control);
     void setSelectedInstrument(int channel, int selectedId);
     void updateBPM(int bpm);
-
+    void sendControlChange(int parameterIndex,float value);
 
     const std::array<int, 2> getSideKeys() const { return sideKeys; }
     // *****************************************************************************

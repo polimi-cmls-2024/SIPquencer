@@ -51,6 +51,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
         attackSlider->setTextBoxStyle(juce::Slider::TextBoxBelow,true, 40, 15);
         attackSlider->setRange(0,1);
         attackSlider->setNumDecimalPlacesToDisplay(2);
+        attackSlider->onValueChange = [this, row] {};
         attackSliders[row] = attackSlider;
         attackAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts, "attack" + std::to_string(row + 1), *attackSlider));
@@ -75,7 +76,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
             audioProcessor.apvts, "cutoff" + std::to_string(row + 1), *cutoffSlider));
     }
 
-
+    const auto& params = audioProcessor.getParameters();
 
     reverbSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     reverbSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 15);
@@ -108,6 +109,9 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
     effectSelector.setSelectedId(1);
     audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
 
+    for (auto param : params) {
+        param->addListener(this);
+    }
 
     setSize(800, 600);
  
@@ -123,6 +127,10 @@ SIP_by_RolandosAudioProcessorEditor::~SIP_by_RolandosAudioProcessorEditor()
     {
         delete pair.second; // Delete each ComboBox pointer
     }
+    const auto& params = audioProcessor.getParameters();
+    for (auto param :params) {
+		param->removeListener(this);
+	}
 }
 
     //==============================================================================
@@ -194,10 +202,16 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
         g.fillRect(controlsColumn);
 
         for (int row = 0; row < numRows; row++) {
-            g.setColour(juce::Colour(178, 162, 133)); // Example color
+            if (row == audioProcessor.getSelectedSequence()) {
+                g.setColour(juce::Colour(114, 144, 159));
+            }
+            else {
+                g.setColour(juce::Colour(178, 162, 133)); // Example color
+            }
             g.fillRoundedRectangle(controlRows[row], 5.f);
             g.setColour(juce::Colours::darkgrey); // Example color
             g.drawRoundedRectangle(controlRows[row], 5.f, 2);
+                
             //g.setColour(juce::Colours::cadetblue); // Example color
 
             //g.fillRect(selectorContainers[row]);
@@ -236,6 +250,7 @@ void  SIP_by_RolandosAudioProcessorEditor::paintQuarters(juce::Graphics& gr){
         gr.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
     }
 }
+
 void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
     for (int step = 0; step < numSteps; step++) {
     for (int row = 0; row < numRows; row++) {
@@ -249,6 +264,11 @@ void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
             gr.fillRoundedRectangle(stepRects[row][step], 10.f);
             gr.setColour(getColorForStep(row, step).darker(0.2));
             gr.drawRoundedRectangle(stepRects[row][step], 10.f, 2);
+            int note = audioProcessor.getSequenceStep(row, step);
+            if (note > 0) {
+                juce::String label = juce::MidiMessage::getMidiNoteName(note, true, true, 3);
+                gr.drawFittedText(label, stepRects[row][step].getSmallestIntegerContainer(), juce::Justification::centred, 1);
+            }
         }
     }
 }
@@ -360,7 +380,8 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
         return juce::Colours::yellowgreen;
     }
     else {
-        switch (audioProcessor.getSequencerState()) {
+        return juce::Colours::black;
+       /* switch (audioProcessor.getSequencerState()) {
         case SIP_by_RolandosAudioProcessor::DEF:
             return juce::Colours::black;
         case SIP_by_RolandosAudioProcessor::R:
@@ -369,7 +390,7 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
             return juce::Colours::blanchedalmond;
         case SIP_by_RolandosAudioProcessor::RRP:
             return juce::Colours::coral;
-        }
+        }*/
     }
    
 }
@@ -380,16 +401,9 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getSideButtonColor(const KeyBu
         return juce::Colours::darkgoldenrod;
     }
     else {
-        switch (audioProcessor.getSequencerState()) {
-        case audioProcessor.DEF:
+      
             return juce::Colour(192, 194, 192);
-        case audioProcessor.R:
-            return juce::Colours::dodgerblue;
-        case audioProcessor.RP:
-            return juce::Colours::blanchedalmond;
-        case audioProcessor.RRP:
-            return juce::Colours::coral;
-        }
+       
     }
 
 }
@@ -736,3 +750,11 @@ void SIP_by_RolandosAudioProcessorEditor::selectControl() {
 
 }
 
+
+void SIP_by_RolandosAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue) {
+	DBG("parameterValueChanged: "+std::to_string(parameterIndex));
+	DBG("newValue: "+ std::to_string(newValue));
+    DBG("id: " + audioProcessor.getParameterID(parameterIndex));
+    audioProcessor.sendControlChange(parameterIndex, newValue);
+	//audioProcessor.setParameter(parameterIndex, newValue);
+}
