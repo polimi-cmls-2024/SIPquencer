@@ -24,12 +24,7 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
 {
     ds.bindToPort(57121);
     sender.connectToSocket(ds, "127.0.0.1", 57121);
-   /* for (auto i = 0; i < param::NumParams; ++i)
-    {
-        const auto pID = static_cast<param::PID>(i);
-        const auto id = param::toID(pID);
-        params[i] = apvts.getParameter(id);
-    }*/
+
     // Initialize the array to zeros
     for (int i = 0; i < seqRows; ++i) {
         for (int j = 0; j < numSteps; ++j) {
@@ -66,7 +61,7 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
 
 SIP_by_RolandosAudioProcessor::~SIP_by_RolandosAudioProcessor()
 {
-   
+ 
 }
 
 //==============================================================================
@@ -274,7 +269,7 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (attackParameter != nullptr) {
                         DBG(normalizedValue);
                         attackParameter->setValueNotifyingHost(normalizedValue);
-                        sender.send("/Control", 2, message.getControllerValue(), message.getChannel());
+                        //sender.send("/Control", 2, message.getControllerValue(), message.getChannel());
                     }
                     else {
                         DBG("Error: attack parameter not found in APVTS");
@@ -286,7 +281,7 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     if (releaseParameter != nullptr) {
                         DBG(normalizedValue);
                         releaseParameter->setValueNotifyingHost(normalizedValue);
-                        sender.send("/Control", 3, message.getControllerValue(), message.getChannel());
+                        //sender.send("/Control", 3, message.getControllerValue(), message.getChannel());
 
                     }
                     else {
@@ -298,8 +293,8 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                     auto* cutoffParameter = apvts.getParameter("cutoff" + std::to_string(selectedSequence + 1));
                     if (cutoffParameter != nullptr) {
                         DBG(normalizedValue);
-                        //cutoffParameter->setValueNotifyingHost(normalizedValue);
-                        sender.send("/Control", 1, message.getControllerValue(), message.getChannel());
+                        cutoffParameter->setValueNotifyingHost(normalizedValue);
+                        //sender.send("/Control", 1, message.getControllerValue(), message.getChannel());
 
                     }
                     else {
@@ -583,7 +578,7 @@ void SIP_by_RolandosAudioProcessor::updateTranspose(const int transpose) {
     {
         KeyButton& button = entry.second;
         //DBG("entry first (midi key): " << entry.first);
-        button.midiKey = entry.first + (transpose - transposeOffset) * 12;
+        button.midiKey = button.midiKey + (transpose - transposeOffset) * 12;
        // DBG("New key: " << button.midiKey);
         button.defLabel = juce::MidiMessage::getMidiNoteName(button.midiKey, true, true, 3);
         //DBG("New label: " << button.defLabel);
@@ -611,3 +606,45 @@ void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int select
 void SIP_by_RolandosAudioProcessor::updateBPM(int bpm) {
     BPM = bpm;
 }
+
+void SIP_by_RolandosAudioProcessor::sendControlChange(int paramIndex, float value ) {
+    juce::String paramId = getParameterID(paramIndex);
+    DBG("paramId: " + paramId);
+    int intValue = static_cast<int>(value * 127.0f);
+    DBG("intValue: " + std::to_string(intValue));
+
+    if (paramId == "delay") {
+		sender.send("/Control", 5, intValue, selectedSequence + 1);
+        return;
+    }
+    else if(paramId == "reverb"){
+        sender.send("/Control", 4, intValue, selectedSequence + 1);
+        return;
+    }
+    else {
+        // Get the last character of the parameter ID
+        juce::String lastChar = paramId.substring(paramId.length() - 1);
+
+        // Convert the last character to an integer
+        int lastCharInt = lastChar.getIntValue();
+
+        DBG("lastCharInt: " + std::to_string(lastCharInt));
+
+        juce::String literalPart = paramId.dropLastCharacters(1);
+
+        DBG("literalPart: " + literalPart);
+
+        if (literalPart == "attack") {
+            sender.send("/Control", 2, intValue, lastCharInt);
+		}
+		else if (literalPart == "release") {
+			sender.send("/Control", 3, intValue, lastCharInt);
+		}
+		else if (literalPart == "cutoff") {
+			sender.send("/Control", 1, intValue, lastCharInt);
+        }
+
+    }
+    
+}
+ 

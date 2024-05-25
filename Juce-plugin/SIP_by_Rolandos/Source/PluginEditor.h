@@ -34,8 +34,8 @@
 /**
 */
 class SIP_by_RolandosAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                             private juce::Timer
-
+                                             private juce::Timer,
+                                             juce::AudioProcessorParameter::Listener
 {
    
 
@@ -52,7 +52,9 @@ public:
     void paintSteps(juce::Graphics&);
     void paintButtonGrid(juce::Graphics&);
     void paintSideButtons(juce::Graphics&);
-
+    void parameterValueChanged(int parameterIndex, float newValue) override;    
+    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {}    
+	
 
     std::map<int, juce::Slider*> attackSliders;
     std::map<int, juce::Slider*> releaseSliders;
@@ -166,7 +168,6 @@ private:
 
     void selectInstrument(int selectorIndex);
     void selectControl();
-
     //*****************************************************************************
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SIP_by_RolandosAudioProcessorEditor)
 };

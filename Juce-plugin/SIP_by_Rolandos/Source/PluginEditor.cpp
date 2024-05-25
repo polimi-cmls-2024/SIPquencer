@@ -51,6 +51,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
         attackSlider->setTextBoxStyle(juce::Slider::TextBoxBelow,true, 40, 15);
         attackSlider->setRange(0,1);
         attackSlider->setNumDecimalPlacesToDisplay(2);
+        attackSlider->onValueChange = [this, row] {};
         attackSliders[row] = attackSlider;
         attackAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts, "attack" + std::to_string(row + 1), *attackSlider));
@@ -75,7 +76,7 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
             audioProcessor.apvts, "cutoff" + std::to_string(row + 1), *cutoffSlider));
     }
 
-
+    const auto& params = audioProcessor.getParameters();
 
     reverbSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     reverbSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 15);
@@ -108,6 +109,9 @@ SIP_by_RolandosAudioProcessorEditor::SIP_by_RolandosAudioProcessorEditor(SIP_by_
     effectSelector.setSelectedId(1);
     audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
 
+    for (auto param : params) {
+        param->addListener(this);
+    }
 
     setSize(800, 600);
  
@@ -123,6 +127,10 @@ SIP_by_RolandosAudioProcessorEditor::~SIP_by_RolandosAudioProcessorEditor()
     {
         delete pair.second; // Delete each ComboBox pointer
     }
+    const auto& params = audioProcessor.getParameters();
+    for (auto param :params) {
+		param->removeListener(this);
+	}
 }
 
     //==============================================================================
@@ -137,9 +145,9 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
         //g.fillRoundedRectangle(topRowRect,20.f);
 
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(bottomRowRect, 30.f);
-        g.setColour(juce::Colours::darkkhaki); // Example color
+        g.setColour(juce::Colour(178, 162, 133)); // Example color
         g.drawRoundedRectangle(bottomRowRect, 30.f, 3);
         juce::DropShadow bottomRowShdw;
         bottomRowShdw.colour = juce::Colours::darkgrey;
@@ -151,7 +159,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
             .withTrimmedRight(10)
             .withTrimmedTop(3));
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(bottomRowRect
             .withTrimmedBottom(5)
             .withTrimmedLeft(10)
@@ -159,9 +167,9 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
             .withTrimmedTop(3), 30.f);
 
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(topRowRect, 30.f);
-        g.setColour(juce::Colours::darkkhaki); // Example color
+        g.setColour(juce::Colour(178, 162, 133)); // Example color
         g.drawRoundedRectangle(topRowRect, 30.f, 3);
 
 
@@ -190,17 +198,23 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
     //g.setColour(juce::Colours::azure);
     //g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRect(controlsColumn);
 
         for (int row = 0; row < numRows; row++) {
-            g.setColour(juce::Colours::darkkhaki); // Example color
+            if (row == audioProcessor.getSelectedSequence()) {
+                g.setColour(juce::Colour(114, 144, 159));
+            }
+            else {
+                g.setColour(juce::Colour(178, 162, 133)); // Example color
+            }
             g.fillRoundedRectangle(controlRows[row], 5.f);
             g.setColour(juce::Colours::darkgrey); // Example color
             g.drawRoundedRectangle(controlRows[row], 5.f, 2);
-            g.setColour(juce::Colours::cadetblue); // Example color
+                
+            //g.setColour(juce::Colours::cadetblue); // Example color
 
-            g.fillRect(selectorContainers[row]);
+            //g.fillRect(selectorContainers[row]);
             //      g.setColour(juce::Colours::coral); // Example color
                   //g.fillRoundedRectangle(attackContainers[row],5.f);
             //      g.setColour(juce::Colours::lightskyblue); // Example color
@@ -229,13 +243,14 @@ void SIP_by_RolandosAudioProcessorEditor::paintView() {
 
 void  SIP_by_RolandosAudioProcessorEditor::paintQuarters(juce::Graphics& gr){
     for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
-        gr.setColour(juce::Colours::darkgrey); // Example color
+        gr.setColour(juce::Colour(178, 162, 133)); // Example color
         gr.fillRoundedRectangle(quarterColums[quarter], 10.f);
-        gr.setColour(juce::Colours::black);
+        gr.setColour(juce::Colours::darkgrey);
         // Draw the border around the rectangle
         gr.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
     }
 }
+
 void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
     for (int step = 0; step < numSteps; step++) {
     for (int row = 0; row < numRows; row++) {
@@ -247,7 +262,13 @@ void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
 
             gr.setColour(getColorForStep(row, step));
             gr.fillRoundedRectangle(stepRects[row][step], 10.f);
+            gr.setColour(getColorForStep(row, step).darker(0.2));
             gr.drawRoundedRectangle(stepRects[row][step], 10.f, 2);
+            int note = audioProcessor.getSequenceStep(row, step);
+            if (note > 0) {
+                juce::String label = juce::MidiMessage::getMidiNoteName(note, true, true, 3);
+                gr.drawFittedText(label, stepRects[row][step].getSmallestIntegerContainer(), juce::Justification::centred, 1);
+            }
         }
     }
 }
@@ -359,7 +380,8 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
         return juce::Colours::yellowgreen;
     }
     else {
-        switch (audioProcessor.getSequencerState()) {
+        return juce::Colours::black;
+       /* switch (audioProcessor.getSequencerState()) {
         case SIP_by_RolandosAudioProcessor::DEF:
             return juce::Colours::black;
         case SIP_by_RolandosAudioProcessor::R:
@@ -368,7 +390,7 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getButtonColor(const KeyButton
             return juce::Colours::blanchedalmond;
         case SIP_by_RolandosAudioProcessor::RRP:
             return juce::Colours::coral;
-        }
+        }*/
     }
    
 }
@@ -379,16 +401,9 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getSideButtonColor(const KeyBu
         return juce::Colours::darkgoldenrod;
     }
     else {
-        switch (audioProcessor.getSequencerState()) {
-            case SIP_by_RolandosAudioProcessor::DEF:
+      
             return juce::Colour(192, 194, 192);
-            case SIP_by_RolandosAudioProcessor::R:
-            return juce::Colours::dodgerblue;
-            case SIP_by_RolandosAudioProcessor::RP:
-            return juce::Colours::blanchedalmond;
-            case SIP_by_RolandosAudioProcessor::RRP:
-            return juce::Colours::coral;
-        }
+       
     }
 
 }
@@ -443,7 +458,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
                                         .withTrimmedBottom(40);
   
 
-    int effectsWidth = innerBottomRowRect.getWidth() /3;
+    int effectsWidth = innerBottomRowRect.getWidth() *0.25;
     int effectsHeight = innerBottomRowRect.getHeight();
     int effectsX = innerBottomRowRect.getX();
     int effectsY = innerBottomRowRect.getY();
@@ -455,7 +470,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
     int keysContainerX = innerBottomRowRect.getX() + effectsWidth;
     int keysContainerY = innerBottomRowRect.getY();
     keysContainer.setBounds(keysContainerX, keysContainerY, keysContainerWidth, keysContainerHeight);
-    setKeyboardBounds(keysContainer);
+    setKeyboardBounds(innerBottomRowRect);
 
 }
 
@@ -639,11 +654,11 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<f
 }
 
 void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
-    float gridBoundX = container.getX();
-    float gridBoundY = container.getY();
+    //float gridBoundX = container.getX();
+    //float gridBoundY = container.getY();
     float gridBoundWidth = container.getWidth() * 0.75;
-    float gridBoundHeight = container.getHeight();
-    buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
+    //float gridBoundHeight = container.getHeight();
+    //buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
     float sideButtonBoundsX = container.getX() + gridBoundWidth;
     float sideButtonBoundsY = container.getY() + (container.getHeight() * 0.5) + 15;
     float sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
@@ -651,7 +666,7 @@ void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<floa
     sideButtonBounds.setBounds(sideButtonBoundsX, sideButtonBoundsY, sideButtonBoundsWidth, sideButtonBoundsHeight);
 
     // Draw the button grid in the gridBounds rectangle
-    setButtonGridBounds(buttonGridBounds);
+    setButtonGridBounds(container);
 
     // Draw the side buttons in the sideButtonBounds rectangle
     setSideButtonBounds(sideButtonBounds);
@@ -735,3 +750,11 @@ void SIP_by_RolandosAudioProcessorEditor::selectControl() {
 
 }
 
+
+void SIP_by_RolandosAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue) {
+	DBG("parameterValueChanged: "+std::to_string(parameterIndex));
+	DBG("newValue: "+ std::to_string(newValue));
+    DBG("id: " + audioProcessor.getParameterID(parameterIndex));
+    audioProcessor.sendControlChange(parameterIndex, newValue);
+	//audioProcessor.setParameter(parameterIndex, newValue);
+}

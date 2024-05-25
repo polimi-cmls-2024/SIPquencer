@@ -104,6 +104,7 @@ int selectedSequence = 0;
 int selectedStep = 1;
 int digitedStep = 0;
 int transpose = 0;
+int bpm =120;
 
 #define TRANSPOSE_OFFSET 64 // for messaging purposes, not to end a negative number the transpose is shifted by 64
 
@@ -200,6 +201,18 @@ void sendState(){
 void sendTranspose(){
   byte toSendTranspose[4] = {0xF0, 5, (byte)(transpose + TRANSPOSE_OFFSET), 0xF7}; // Ensure transpose is cast to byte
   MIDI.sendSysEx(sizeof(toSendTranspose), toSendTranspose, true);
+} 
+
+void sendBPM(){
+    byte toSendBPM[4] = {0xF0,6,bpm,0xF7};
+    MIDI.sendSysEx(4, toSendBPM,true);
+}
+
+void sendSelectedStep(){
+  // Serial.print("selectedstep:\t");
+  // Serial.println(selectedStep);
+   byte selStep[4] = {0xF0,2,selectedStep,0xF7};
+  MIDI.sendSysEx(4, selStep,true);
 }
 /*----------------STEP-SEQUENCER--------------*/
 
@@ -340,25 +353,54 @@ void selectSequence(int seqNumber){
   MIDI.sendSysEx(4, selSeq,true);
 }
 
-void insertStep(int digit){
-  digitedStep = digitedStep *10 + digit;
-  //validateInsertedStep();
+void nextStep(){
+  selectedStep = (selectedStep+ 1) % (STEP_MAX_SIZE);
+  
+  sendSelectedStep();
 }
 
-void validateInsertedStep(){
-  if(digitedStep>0 && digitedStep<=STEP_MAX_SIZE){
-    selectedStep = digitedStep-1;
-    
-    // //Serial.print("SELECTED STEP:\t");
-    // //Serial.println(selectedStep);
-  }else{
-    selectedStep = 0;
-    digitedStep = 0;
-    // //Serial.println("DIGITED STEP NOT VALID");
+void prevStep(){
+  if(selectedStep > 0){
+    selectedStep = (selectedStep- 1) % (STEP_MAX_SIZE);
   }
-  byte selStep[4] = {0xF0,2,selectedStep,0xF7};
-  MIDI.sendSysEx(4, selStep,true);
+  else{
+    selectedStep = STEP_MAX_SIZE-1;
+  }
+  sendSelectedStep();
 }
+
+void increaseNoteLength(){
+  if(_step_length <23){
+    ATOMIC(_step_length++);
+  }
+}
+
+void decreaseNoteLength(){
+ if(_step_length >0){
+    ATOMIC(_step_length--);
+  }
+}
+
+
+// void insertStep(int digit){
+//   digitedStep = digitedStep *10 + digit;
+//   //validateInsertedStep();
+// }
+
+// void validateInsertedStep(){
+//   if(digitedStep>0 && digitedStep<=STEP_MAX_SIZE){
+//     selectedStep = digitedStep-1;
+    
+//     // //Serial.print("SELECTED STEP:\t");
+//     // //Serial.println(selectedStep);
+//   }else{
+//     selectedStep = 0;
+//     digitedStep = 0;
+//     // //Serial.println("DIGITED STEP NOT VALID");
+//   }
+//   byte selStep[4] = {0xF0,2,selectedStep,0xF7};
+//   MIDI.sendSysEx(4, selStep,true);
+// }
 
 void selectNote(int key){
   if(_sequencer[selectedSequence]._sequence[selectedStep].note == getNote(key)){
@@ -409,7 +451,7 @@ void resetAll(){
 void initSequencerData(){
   
   // Set the clock BPM to 126 BPM
-  uClock.setTempo(126);
+  uClock.setTempo(bpm);
   for(uint16_t t = 0; t < N_TRACKS;t++){
   // initing sequencer data
     for ( uint16_t i = 0; i < STEP_MAX_SIZE; i++ ) {
@@ -441,6 +483,22 @@ void acidRandomize()
   sendSelectedSequenceVector();
 }
 
+void increaseBPM(){
+  if(bpm<200){
+    bpm++;
+    uClock.setTempo(bpm);
+    sendBPM();
+  }
+
+}
+
+void decreaseBPM(){
+  if(bpm>30){
+    bpm--;
+    uClock.setTempo(bpm);
+    sendBPM();
+  }
+}
 /*-----------------------------------------------*/
 
 /*----------------STATE MACHINE------------------*/
@@ -522,7 +580,6 @@ void keyReleaseStateTrans(int key){
           sendTranspose();
           break;
         case R:
-          validateInsertedStep();
           state = DEF;
           digitedStep = 0;
           break;
@@ -597,21 +654,59 @@ void handleCurrentState(int key,KeyState kState){
   if(kState != PRESSED)return;
   switch(state){
     case R:
-      if(key==STAR) clearSequence();
-      else if(key==HASHMRK) muteSeq();
-      else{
-        insertStep(key);
-      }
+    switch(key){
+      case STAR: 
+        clearSequence();
+        break;
+      case HASHMRK:
+        muteSeq();
+        break;
+      case 2:
+        nextStep();
+        break;
+      case 1:
+        prevStep();
+        break;
+      case 4:
+        increaseNoteLength();
+        break;
+      case 5:
+        // increaseAccent();
+        break;
+      case 7:
+        decreaseNoteLength();
+        break;
+      case 8:
+        // decreaseAccent();
+        break;
+      default:
+        break;
+    }
+
     break;
     case RP:
       selectNote(key);
     break;
     case RRP:
-      if(key==STAR) resetAll();
-      else if(key==HASHMRK) playPause();
-      else if(key== 9)acidRandomize();
-      else{
-        selectSequence(key);
+      switch(key){
+        case STAR:
+          resetAll();
+          break;
+        case HASHMRK:
+          playPause();
+          break;
+        case 8:
+          increaseBPM();
+          break;
+        case 0:
+          decreaseBPM();
+          break;
+        case 9:
+          acidRandomize();
+          break;
+        default:
+          selectSequence(key);
+          break;
       }
     break;
     default:
