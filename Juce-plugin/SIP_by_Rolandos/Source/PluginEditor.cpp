@@ -380,13 +380,13 @@ juce::Colour SIP_by_RolandosAudioProcessorEditor::getSideButtonColor(const KeyBu
     }
     else {
         switch (audioProcessor.getSequencerState()) {
-        case audioProcessor.DEF:
+            case SIP_by_RolandosAudioProcessor::DEF:
             return juce::Colour(192, 194, 192);
-        case audioProcessor.R:
+            case SIP_by_RolandosAudioProcessor::R:
             return juce::Colours::dodgerblue;
-        case audioProcessor.RP:
+            case SIP_by_RolandosAudioProcessor::RP:
             return juce::Colours::blanchedalmond;
-        case audioProcessor.RRP:
+            case SIP_by_RolandosAudioProcessor::RRP:
             return juce::Colours::coral;
         }
     }
@@ -723,14 +723,14 @@ void SIP_by_RolandosAudioProcessorEditor::timerCallback()
 }
 
 void SIP_by_RolandosAudioProcessorEditor::selectInstrument(int selectorIndex) {
-    DBG("selectorIndex: ", selectorIndex);
-    DBG("selectedInstr: ", instrSelectors[selectorIndex]->getSelectedId());
+    DBG("selectorIndex: "+ selectorIndex);
+    DBG("selectedInstr: "+ instrSelectors[selectorIndex]->getSelectedId());
     audioProcessor.setSelectedInstrument(selectorIndex, instrSelectors[selectorIndex]->getSelectedId());
 
 }
 
 void SIP_by_RolandosAudioProcessorEditor::selectControl() {
-    DBG("selected control: ", effectSelector.getSelectedId());
+    DBG("selected control: "+ effectSelector.getSelectedId());
     audioProcessor.setSelectedControl(effectSelector.getText().toLowerCase());
 
 }

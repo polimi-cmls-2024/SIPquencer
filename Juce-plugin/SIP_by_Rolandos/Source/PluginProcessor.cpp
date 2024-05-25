@@ -603,8 +603,8 @@ void SIP_by_RolandosAudioProcessor::setSelectedControl(const juce::String contro
 
 void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int selectedInstr) {
     sender.send("/ProgramChange", channel, selectedInstr);
-    DBG("channel", channel);
-    DBG("selectedInstr", selectedInstr);
+    DBG("channel"+ channel);
+    DBG("selectedInstr"+ selectedInstr);
 
 }
 
