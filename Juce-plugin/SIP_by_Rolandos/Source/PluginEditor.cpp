@@ -137,9 +137,9 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
         //g.fillRoundedRectangle(topRowRect,20.f);
 
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(bottomRowRect, 30.f);
-        g.setColour(juce::Colours::darkkhaki); // Example color
+        g.setColour(juce::Colour(178, 162, 133)); // Example color
         g.drawRoundedRectangle(bottomRowRect, 30.f, 3);
         juce::DropShadow bottomRowShdw;
         bottomRowShdw.colour = juce::Colours::darkgrey;
@@ -151,7 +151,7 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
             .withTrimmedRight(10)
             .withTrimmedTop(3));
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(bottomRowRect
             .withTrimmedBottom(5)
             .withTrimmedLeft(10)
@@ -159,9 +159,9 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
             .withTrimmedTop(3), 30.f);
 
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRoundedRectangle(topRowRect, 30.f);
-        g.setColour(juce::Colours::darkkhaki); // Example color
+        g.setColour(juce::Colour(178, 162, 133)); // Example color
         g.drawRoundedRectangle(topRowRect, 30.f, 3);
 
 
@@ -190,17 +190,17 @@ void SIP_by_RolandosAudioProcessorEditor::paint(juce::Graphics& g)
     //g.setColour(juce::Colours::azure);
     //g.drawRoundedRectangle(sideButtonBounds, 8.f, 3);
 
-        g.setColour(juce::Colours::khaki); // Example color
+        g.setColour(juce::Colour(234, 216, 184)); // Example color
         g.fillRect(controlsColumn);
 
         for (int row = 0; row < numRows; row++) {
-            g.setColour(juce::Colours::darkkhaki); // Example color
+            g.setColour(juce::Colour(178, 162, 133)); // Example color
             g.fillRoundedRectangle(controlRows[row], 5.f);
             g.setColour(juce::Colours::darkgrey); // Example color
             g.drawRoundedRectangle(controlRows[row], 5.f, 2);
-            g.setColour(juce::Colours::cadetblue); // Example color
+            //g.setColour(juce::Colours::cadetblue); // Example color
 
-            g.fillRect(selectorContainers[row]);
+            //g.fillRect(selectorContainers[row]);
             //      g.setColour(juce::Colours::coral); // Example color
                   //g.fillRoundedRectangle(attackContainers[row],5.f);
             //      g.setColour(juce::Colours::lightskyblue); // Example color
@@ -229,9 +229,9 @@ void SIP_by_RolandosAudioProcessorEditor::paintView() {
 
 void  SIP_by_RolandosAudioProcessorEditor::paintQuarters(juce::Graphics& gr){
     for (int quarter = 0; quarter < floor(numSteps / 4); quarter++) {
-        gr.setColour(juce::Colours::darkgrey); // Example color
+        gr.setColour(juce::Colour(178, 162, 133)); // Example color
         gr.fillRoundedRectangle(quarterColums[quarter], 10.f);
-        gr.setColour(juce::Colours::black);
+        gr.setColour(juce::Colours::darkgrey);
         // Draw the border around the rectangle
         gr.drawRoundedRectangle(quarterColums[quarter], 10.f, 3);
     }
@@ -247,6 +247,7 @@ void SIP_by_RolandosAudioProcessorEditor::paintSteps(juce::Graphics& gr) {
 
             gr.setColour(getColorForStep(row, step));
             gr.fillRoundedRectangle(stepRects[row][step], 10.f);
+            gr.setColour(getColorForStep(row, step).darker(0.2));
             gr.drawRoundedRectangle(stepRects[row][step], 10.f, 2);
         }
     }
@@ -443,7 +444,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
                                         .withTrimmedBottom(40);
   
 
-    int effectsWidth = innerBottomRowRect.getWidth() /3;
+    int effectsWidth = innerBottomRowRect.getWidth() *0.25;
     int effectsHeight = innerBottomRowRect.getHeight();
     int effectsX = innerBottomRowRect.getX();
     int effectsY = innerBottomRowRect.getY();
@@ -455,7 +456,7 @@ void SIP_by_RolandosAudioProcessorEditor::resized()
     int keysContainerX = innerBottomRowRect.getX() + effectsWidth;
     int keysContainerY = innerBottomRowRect.getY();
     keysContainer.setBounds(keysContainerX, keysContainerY, keysContainerWidth, keysContainerHeight);
-    setKeyboardBounds(keysContainer);
+    setKeyboardBounds(innerBottomRowRect);
 
 }
 
@@ -639,11 +640,11 @@ void SIP_by_RolandosAudioProcessorEditor::setEffectKnobsBounds(juce::Rectangle<f
 }
 
 void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<float> container) {
-    float gridBoundX = container.getX();
-    float gridBoundY = container.getY();
+    //float gridBoundX = container.getX();
+    //float gridBoundY = container.getY();
     float gridBoundWidth = container.getWidth() * 0.75;
-    float gridBoundHeight = container.getHeight();
-    buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
+    //float gridBoundHeight = container.getHeight();
+    //buttonGridBounds.setBounds(gridBoundX, gridBoundY, gridBoundWidth, gridBoundHeight);
     float sideButtonBoundsX = container.getX() + gridBoundWidth;
     float sideButtonBoundsY = container.getY() + (container.getHeight() * 0.5) + 15;
     float sideButtonBoundsWidth = container.getWidth() - gridBoundWidth;
@@ -651,7 +652,7 @@ void SIP_by_RolandosAudioProcessorEditor::setKeyboardBounds(juce::Rectangle<floa
     sideButtonBounds.setBounds(sideButtonBoundsX, sideButtonBoundsY, sideButtonBoundsWidth, sideButtonBoundsHeight);
 
     // Draw the button grid in the gridBounds rectangle
-    setButtonGridBounds(buttonGridBounds);
+    setButtonGridBounds(container);
 
     // Draw the side buttons in the sideButtonBounds rectangle
     setSideButtonBounds(sideButtonBounds);
