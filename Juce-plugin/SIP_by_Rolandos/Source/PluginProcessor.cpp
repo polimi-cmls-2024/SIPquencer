@@ -600,8 +600,8 @@ void SIPquencerAudioProcessor::setSelectedControl(const juce::String control) {
 
 void SIPquencerAudioProcessor::setSelectedInstrument(int channel,int selectedInstr) {
     sender.send("/ProgramChange", channel, selectedInstr);
-    DBG("channel", channel);
-    DBG("selectedInstr", selectedInstr);
+    DBG("channel"+ channel);
+    DBG("selectedInstr"+ selectedInstr);
 
 }
 
