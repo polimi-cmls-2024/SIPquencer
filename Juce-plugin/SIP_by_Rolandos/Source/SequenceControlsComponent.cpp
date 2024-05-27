@@ -151,6 +151,6 @@ void SequenceControlsComponent::setControlBounds(juce::Rectangle<float> containe
 
 void SequenceControlsComponent::selectInstrument() {
     DBG("selectorIndex: ", selectorIndex);
-    audioProcessor.setSelectedInstrument(sequenceIndex, instrSelector->getSelectedId());
+    audioProcessor.setSelectedInstrument(sequenceIndex, instrSelector->getSelectedId()+1);
 
 }
