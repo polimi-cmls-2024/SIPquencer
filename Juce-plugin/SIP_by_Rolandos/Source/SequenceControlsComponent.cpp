@@ -52,9 +52,12 @@ SequenceControlsComponent::SequenceControlsComponent(SIPquencerAudioProcessor& p
         audioProcessor.apvts, "cutoff" + std::to_string(sequenceIndex), *cutoffSlider);
 
     instrSelector = new juce::ComboBox();
-    instrSelector->addItem("Instr. 1", 1);
-    instrSelector->addItem("Instr. 2", 2);
-    instrSelector->addItem("Instr. 3", 3);
+    instrSelector->addItem("SuperSaw", 1);
+    instrSelector->addItem("Acid", 2);
+    instrSelector->addItem("FatBass", 3);
+    instrSelector->addItem("Snare", 4);
+    instrSelector->addItem("Kick", 5);
+
 
     // Capture 'row' by value to ensure each lambda captures its own value of 'row'
     instrSelector->onChange = [this] { selectInstrument(); };
