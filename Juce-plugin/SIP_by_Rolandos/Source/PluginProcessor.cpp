@@ -637,13 +637,13 @@ void SIPquencerAudioProcessor::sendControlChange(int paramIndex, float value ) {
         DBG("literalPart: " + literalPart);
 
         if (literalPart == "attack") {
-            sender.send("/Control", 2, intValue, lastCharInt);
+            sender.send("/Control", 2, intValue, lastCharInt+1);
 		}
 		else if (literalPart == "release") {
-			sender.send("/Control", 3, intValue, lastCharInt);
+			sender.send("/Control", 3, intValue, lastCharInt+1);
 		}
 		else if (literalPart == "cutoff") {
-			sender.send("/Control", 1, intValue, lastCharInt);
+			sender.send("/Control", 1, intValue, lastCharInt+1);
         }
 
     }
