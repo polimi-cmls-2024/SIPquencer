@@ -12,37 +12,20 @@
 #include "Params.h"
 #include <array>
   
+#include "KeyButton.h"
 
 // *****************************************************************************
-struct KeyButton
-{
-    int midiKey;
-    bool pressed;
-    bool playing;
-    int row;
-    int col;
-    juce:: String defLabel;
-    juce::String Rlabel;
-    juce::String RPlabel;
-    juce::String RRPlabel;
-    KeyButton() : midiKey(0), pressed(false), playing(false), row(0),col(0) ,defLabel(""),Rlabel(""), RPlabel(""), RRPlabel("") {}
-    KeyButton(int _midiKey, juce::String defLabel, juce::String _Rlabel, juce::String _RPlabel, juce::String _RRPlabel) :
-        midiKey(_midiKey), pressed(false), playing(false), row(-1), col(-1),
-        defLabel(defLabel), Rlabel(_Rlabel), RPlabel(_RPlabel), RRPlabel(_RRPlabel) {}
-    KeyButton(int _midiKey,int _row, int _col,juce::String defLabel, juce::String _Rlabel, juce::String _RPlabel, juce::String _RRPlabel) :
-        midiKey(_midiKey), pressed(false),playing(false), row(_row), col(_col),
-        defLabel(defLabel),Rlabel(_Rlabel),RPlabel(_RPlabel),RRPlabel(_RRPlabel) {}
-};
+
 //==============================================================================
 /**
 */
-class SIP_by_RolandosAudioProcessor  : public juce::AudioProcessor
+class SIPquencerAudioProcessor  : public juce::AudioProcessor
 
 {
 public:
     //==============================================================================
-    SIP_by_RolandosAudioProcessor();
-    ~SIP_by_RolandosAudioProcessor() override;
+    SIPquencerAudioProcessor();
+    ~SIPquencerAudioProcessor() override;
 
     enum State {
         DEF,  // Default state
@@ -82,14 +65,14 @@ public:
 
     const std::array<juce::String, 2> defSideLables = { "oct+","oct-" };
 
-    const std::array<juce::String, 12> RstateKeyLabels = { "1","2","3","4","5","6","7","8","9","Clear Seq.","0","Mute Seq." };
+    const std::array<juce::String, 12> RstateKeyLabels = { "prev.","next","","","","","","","","Clear Seq.","","Mute Seq." };
     const std::array<juce::String, 2> RstateSideLabels = { "step",""};
 
     const std::array<juce::String, 2> RPstateSideLabels = { "","note" };
 
 
     //const std::array<juce::String, 12> RPstateLabels = { "1","2","3","4","5","6","7","8","9","10","0","11" };
-    const std::array<juce::String, 12> RRPstateKeyLabels = { "Seq. 1","Seq. 2","Seq.3","","","","","","Acid Maniac","Clear All","","Play/Pause"};
+    const std::array<juce::String, 12> RRPstateKeyLabels = { "Seq. 1","Seq. 2","Seq.3","","","","","","Rand.","Clear All","","Play/Pause"};
     const std::array<juce::String, 2> RRPstateSideLabels = { "seq.","view"};
 
 
@@ -167,7 +150,11 @@ public:
     void updateBPM(int bpm);
     void sendControlChange(int parameterIndex,float value);
 
+
     const std::array<int, 2> getSideKeys() const { return sideKeys; }
+
+    bool tempoRunning() { return isTempoRunning; }
+
     // *****************************************************************************
     // 1. We are going to use the AudioProcessorValueTreeState class for implementing
     // the communication between Editor and Processor   
@@ -185,7 +172,7 @@ private:
     //==============================================================================
       // Add member variables for tempo and step tracking
 
-    bool isTempoRunning = false;
+    bool isTempoRunning;
     int BPM;
 
     int currentStep = 0;
@@ -206,6 +193,7 @@ private:
     juce::DatagramSocket ds;
     juce::OSCSender sender;
 
+
     // Other member variables...
     // *****************************************************************************
     // 9. Add the DSP filter in the Processor header
@@ -213,5 +201,5 @@ private:
     // template<typename MonoProcessorType, typename StateType>	
     // we also add a variable lastSampleRate to support later
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SIP_by_RolandosAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SIPquencerAudioProcessor)
 };

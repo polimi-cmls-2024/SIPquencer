@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor() 
+SIPquencerAudioProcessor::SIPquencerAudioProcessor() 
 #ifndef JucePlugin_PreferredChannelConfigurations
         :AudioProcessor(BusesProperties()
             #if ! JucePlugin_IsMidiEffect
@@ -24,7 +24,7 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
 {
     ds.bindToPort(57121);
     sender.connectToSocket(ds, "127.0.0.1", 57121);
-
+    isTempoRunning = false;
     // Initialize the array to zeros
     for (int i = 0; i < seqRows; ++i) {
         for (int j = 0; j < numSteps; ++j) {
@@ -59,18 +59,18 @@ SIP_by_RolandosAudioProcessor::SIP_by_RolandosAudioProcessor()
     };
 }
 
-SIP_by_RolandosAudioProcessor::~SIP_by_RolandosAudioProcessor()
+SIPquencerAudioProcessor::~SIPquencerAudioProcessor()
 {
  
 }
 
 //==============================================================================
-const juce::String SIP_by_RolandosAudioProcessor::getName() const
+const juce::String SIPquencerAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool SIP_by_RolandosAudioProcessor::acceptsMidi() const
+bool SIPquencerAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -79,7 +79,7 @@ bool SIP_by_RolandosAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool SIP_by_RolandosAudioProcessor::producesMidi() const
+bool SIPquencerAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -88,7 +88,7 @@ bool SIP_by_RolandosAudioProcessor::producesMidi() const
    #endif
 }
 
-bool SIP_by_RolandosAudioProcessor::isMidiEffect() const
+bool SIPquencerAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -97,37 +97,37 @@ bool SIP_by_RolandosAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double SIP_by_RolandosAudioProcessor::getTailLengthSeconds() const
+double SIPquencerAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int SIP_by_RolandosAudioProcessor::getNumPrograms()
+int SIPquencerAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int SIP_by_RolandosAudioProcessor::getCurrentProgram()
+int SIPquencerAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void SIP_by_RolandosAudioProcessor::setCurrentProgram (int index)
+void SIPquencerAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String SIP_by_RolandosAudioProcessor::getProgramName (int index)
+const juce::String SIPquencerAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void SIP_by_RolandosAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void SIPquencerAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void SIP_by_RolandosAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void SIPquencerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -142,14 +142,14 @@ void SIP_by_RolandosAudioProcessor::prepareToPlay (double sampleRate, int sample
 
 }
 
-void SIP_by_RolandosAudioProcessor::releaseResources()
+void SIPquencerAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool SIP_by_RolandosAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool SIPquencerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -174,7 +174,7 @@ bool SIP_by_RolandosAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 }
 #endif
 
-void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SIPquencerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
 
@@ -208,11 +208,13 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
             // Start tempo
             currentStep = 0; // Reset current step
             clockCount = 0; // Reset clock count
+            isTempoRunning = true;
 
         }
         else if (message.isMidiStop())
         {
             DBG("Received MIDI STOP: " << message.getDescription());
+            isTempoRunning = false;
          
             // Stop tempo
         }
@@ -367,18 +369,18 @@ void SIP_by_RolandosAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
 
 //==============================================================================
-bool SIP_by_RolandosAudioProcessor::hasEditor() const
+bool SIPquencerAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* SIP_by_RolandosAudioProcessor::createEditor()
+juce::AudioProcessorEditor* SIPquencerAudioProcessor::createEditor()
 {
-    return new SIP_by_RolandosAudioProcessorEditor (*this);
+    return new SIPquencerAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void SIP_by_RolandosAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void SIPquencerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -388,7 +390,7 @@ void SIP_by_RolandosAudioProcessor::getStateInformation (juce::MemoryBlock& dest
     copyXmlToBinary(*xml, destData);*/
 }
 
-void SIP_by_RolandosAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void SIPquencerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -398,7 +400,7 @@ void SIP_by_RolandosAudioProcessor::setStateInformation (const void* data, int s
             apvts.replaceState(juce::ValueTree::fromXml(*xmlState));*/
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout SIP_by_RolandosAudioProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout SIPquencerAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
@@ -486,10 +488,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout SIP_by_RolandosAudioProcesso
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new SIP_by_RolandosAudioProcessor();
+    return new SIPquencerAudioProcessor();
 }
 // *****************************************************************************
-void SIP_by_RolandosAudioProcessor::noteOn(const int midiKey)
+void SIPquencerAudioProcessor::noteOn(const int midiKey)
 {
     // Check if the MIDI key exists in the grid
     if (MIDItoKeyMap.find(midiKey) != MIDItoKeyMap.end())
@@ -499,7 +501,7 @@ void SIP_by_RolandosAudioProcessor::noteOn(const int midiKey)
     }
 }
 
-void SIP_by_RolandosAudioProcessor::noteOff(const int midiKey)
+void SIPquencerAudioProcessor::noteOff(const int midiKey)
 {
     // Check if the MIDI key exists in the grid
     if (MIDItoKeyMap.find(midiKey) != MIDItoKeyMap.end())
@@ -509,7 +511,7 @@ void SIP_by_RolandosAudioProcessor::noteOff(const int midiKey)
     }
 }
 
-void SIP_by_RolandosAudioProcessor::pressKey(const int key)
+void SIPquencerAudioProcessor::pressKey(const int key)
 {
     //DBG("Pressing key: " << key);
 	// Check if the key exists in the grid
@@ -525,7 +527,7 @@ void SIP_by_RolandosAudioProcessor::pressKey(const int key)
 	}
 }
 
-void SIP_by_RolandosAudioProcessor::releaseKey(int key)
+void SIPquencerAudioProcessor::releaseKey(int key)
 {
     // Check if the key exists in the grid
    // DBG("Releasing key: " << key);
@@ -543,19 +545,19 @@ void SIP_by_RolandosAudioProcessor::releaseKey(int key)
     }
 }
 
-void SIP_by_RolandosAudioProcessor::selectSequence(int seqNumber) {
+void SIPquencerAudioProcessor::selectSequence(int seqNumber) {
     selectedSequence = seqNumber;
 }
 
-void SIP_by_RolandosAudioProcessor::selectStep(int stepNumber) {
+void SIPquencerAudioProcessor::selectStep(int stepNumber) {
 	selectedStep = stepNumber;
 }
 
-void SIP_by_RolandosAudioProcessor::selectNote(int noteNumber) {
+void SIPquencerAudioProcessor::selectNote(int noteNumber) {
 	selectedNote = noteNumber;
 }
 
-void SIP_by_RolandosAudioProcessor::updateSelectedSequence(const juce::uint8* data) {
+void SIPquencerAudioProcessor::updateSelectedSequence(const juce::uint8* data) {
     for (int i = 0; i < numSteps; ++i) {
         if (data[i + 1] < 128 && data[i + 1] >= 0) {
             sequences[selectedSequence][i] = data[i + 1];
@@ -563,7 +565,7 @@ void SIP_by_RolandosAudioProcessor::updateSelectedSequence(const juce::uint8* da
     }
 }
 
-void SIP_by_RolandosAudioProcessor::updateState(const unsigned char newState) {
+void SIPquencerAudioProcessor::updateState(const unsigned char newState) {
 	if (newState == DEF || newState == R || newState == RP || newState == RRP ) {
 		state = newState;
 	}
@@ -572,7 +574,7 @@ void SIP_by_RolandosAudioProcessor::updateState(const unsigned char newState) {
     }
 }
 
-void SIP_by_RolandosAudioProcessor::updateTranspose(const int transpose) {
+void SIPquencerAudioProcessor::updateTranspose(const int transpose) {
     DBG("Transposing by: " << (transpose - transposeOffset));
     for (auto& entry : keyButtonGrid)
     {
@@ -586,7 +588,7 @@ void SIP_by_RolandosAudioProcessor::updateTranspose(const int transpose) {
     }
 }
 
-void SIP_by_RolandosAudioProcessor::setSelectedControl(const juce::String control) {
+void SIPquencerAudioProcessor::setSelectedControl(const juce::String control) {
     auto cont = controlMap.find(control);
     if (cont != controlMap.end()) {
         selectedControl = cont->second;
@@ -596,18 +598,18 @@ void SIP_by_RolandosAudioProcessor::setSelectedControl(const juce::String contro
     }
 }
 
-void SIP_by_RolandosAudioProcessor::setSelectedInstrument(int channel,int selectedInstr) {
+void SIPquencerAudioProcessor::setSelectedInstrument(int channel,int selectedInstr) {
     sender.send("/ProgramChange", channel, selectedInstr);
     DBG("channel", channel);
     DBG("selectedInstr", selectedInstr);
 
 }
 
-void SIP_by_RolandosAudioProcessor::updateBPM(int bpm) {
+void SIPquencerAudioProcessor::updateBPM(int bpm) {
     BPM = bpm;
 }
 
-void SIP_by_RolandosAudioProcessor::sendControlChange(int paramIndex, float value ) {
+void SIPquencerAudioProcessor::sendControlChange(int paramIndex, float value ) {
     juce::String paramId = getParameterID(paramIndex);
     DBG("paramId: " + paramId);
     int intValue = static_cast<int>(value * 127.0f);
@@ -648,3 +650,4 @@ void SIP_by_RolandosAudioProcessor::sendControlChange(int paramIndex, float valu
     
 }
  
+

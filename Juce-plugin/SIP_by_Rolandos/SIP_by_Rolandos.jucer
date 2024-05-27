@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Tdk6l3" name="SIP_by_Rolandos" projectType="audioplug" useAppConfig="0"
+<JUCERPROJECT id="Tdk6l3" name="SIPquencer" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
               pluginVST3Category="Fx" cppLanguageStandard="17">
-  <MAINGROUP id="EZ1Mu2" name="SIP_by_Rolandos">
+  <MAINGROUP id="EZ1Mu2" name="SIPquencer">
     <GROUP id="{1CFFAE97-8A8F-F631-C257-CFC2072A8E77}" name="Resources">
-      <FILE id="s4Jdg6" name="sipquencer_large.png" compile="0" resource="1"
-            file="../../Resources/sipquencer_large.png"/>
-      <FILE id="uvYjNN" name="sipquencer_small.png" compile="0" resource="1"
-            file="../../Resources/sipquencer_small.png"/>
-      <FILE id="E2DFTn" name="sipquencer_small_resized.png" compile="0" resource="1"
-            file="../../Resources/sipquencer_small_resized.png"/>
+      <FILE id="eLDmCL" name="DREPHONIC.ttf" compile="0" resource="1" file="../../../../../DREPHONIC.ttf"/>
+      <FILE id="DGkQzz" name="SIPquencer_logo.png" compile="0" resource="1"
+            file="../../../../../SIPquencer_logo.png"/>
     </GROUP>
     <GROUP id="{F0C928B8-71B6-2D82-C491-B11E565A4E79}" name="Source">
+      <GROUP id="{2662DF63-E9D5-60A2-BA73-22A50E4DAD8A}" name="Components">
+        <FILE id="bb7TaK" name="KeyPadComponent.h" compile="0" resource="0"
+              file="Source/KeyPadComponent.h"/>
+        <FILE id="BpTdhr" name="SequencerGridComponent.cpp" compile="1" resource="0"
+              file="Source/SequencerGridComponent.cpp"/>
+        <FILE id="ftnd4I" name="KeyPadComponent.cpp" compile="1" resource="0"
+              file="Source/KeyPadComponent.cpp"/>
+        <FILE id="v8unja" name="SequencerGridComponent.h" compile="0" resource="0"
+              file="Source/SequencerGridComponent.h"/>
+        <FILE id="ekvgVo" name="SequenceControlsComponent.h" compile="0" resource="0"
+              file="Source/SequenceControlsComponent.h"/>
+        <FILE id="iwv3gq" name="SequenceControlsComponent.cpp" compile="1"
+              resource="0" file="Source/SequenceControlsComponent.cpp"/>
+        <FILE id="Ykhn4P" name="SequencerStepComponent.h" compile="0" resource="0"
+              file="Source/SequencerStepComponent.h"/>
+        <FILE id="U8dIFq" name="SequencerStepComponent.cpp" compile="1" resource="0"
+              file="Source/SequencerStepComponent.cpp"/>
+      </GROUP>
+      <FILE id="g1YCuI" name="KeyButton.h" compile="0" resource="0" file="Source/KeyButton.h"/>
       <FILE id="qHcBGV" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <FILE id="jvQ3U3" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
