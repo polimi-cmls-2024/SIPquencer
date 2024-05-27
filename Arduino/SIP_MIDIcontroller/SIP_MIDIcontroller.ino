@@ -121,7 +121,7 @@ unsigned long timer = 0;
 const float sensorMin = 0;         // Minimum sensor value (degrees)
 const float sensorMax = 120;       // Maximum sensor value (degrees)
 
-float sensorValue;                 // value read directly from sensor (processed by MPU6050 library)
+int sensorValue;                 // value read directly from sensor (processed by MPU6050 library)
 int mappedValue;                   // value of MIDI content
 
 float previousSensorValue;         // used to avoid sending useless MIDI messages if sensor value doesn't change
@@ -499,6 +499,21 @@ void decreaseBPM(){
     sendBPM();
   }
 }
+
+void increaseTranspose(){
+  if(transpose < 4){
+    transpose++;
+    sendTranspose();
+  }
+}
+
+void decreaseTranspose(){
+  if(transpose > -4){
+    transpose--;
+    sendTranspose();
+  }
+}
+
 /*-----------------------------------------------*/
 
 /*----------------STATE MACHINE------------------*/
@@ -576,8 +591,7 @@ void keyReleaseStateTrans(int key){
       switch(state){
         case DEF:
           state = DEF;
-          transpose++;
-          sendTranspose();
+          increaseTranspose();
           break;
         case R:
           state = DEF;
@@ -594,8 +608,7 @@ void keyReleaseStateTrans(int key){
       switch(state){
         case DEF:
           state = DEF;
-          transpose--;
-          sendTranspose();
+          decreaseTranspose();
           break;
         case RP:
           state = DEF;
@@ -773,16 +786,22 @@ void sendGyroCC(){
   // COMMENT
   // Get sensor value
   // NOTE: X and Y angles return weird values, maybe try different library
-  sensorValue = mpu.getAngleZ();
   
+  sensorValue = (int)mpu.getAngleZ() %360;
+  if(sensorValue<0){
+    sensorValue += 360;
+  }
+  if(sensorValue>= 0 && sensorValue <=120){
 
-  // Clip sensor value if limits are exceeded
-  if(sensorValue < sensorMin){
-    sensorValue = sensorMin;
-  }else if(sensorValue > sensorMax){
+  }else if(sensorValue > 120 && sensorValue<270){
     sensorValue = sensorMax;
+  }else{
+    sensorValue = sensorMin;
   }
 
+
+  // Serial.print("sensorValue: \t");
+  // Serial.println(sensorValue);
   // Map value to MIDI range
   mappedValue = map(sensorValue, sensorMin, sensorMax, 0, 127);
   
