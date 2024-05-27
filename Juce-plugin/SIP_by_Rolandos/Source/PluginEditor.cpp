@@ -387,7 +387,9 @@ void SIPquencerAudioProcessorEditor::timerCallback()
     ////repaint();
     sequencerGrid.repaintGrid();
     keypad.repaint();
-    sequenceControls[audioProcessor.getSelectedSequence()]->repaint();
+    for (int row = 0; row < numRows; row++) {
+        sequenceControls[row]->repaint();
+    }
 }
 
 
