@@ -395,7 +395,7 @@ void SIPquencerAudioProcessorEditor::timerCallback()
 
 
 void SIPquencerAudioProcessorEditor::selectControl() {
-    DBG("selected control: ", effectSelector.getSelectedId());
+    //DBG("selected control: ", effectSelector.getSelectedId());
     audioProcessor.setSelectedControl(effectSelector->getText().toLowerCase());
 
 }
