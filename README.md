@@ -1,5 +1,7 @@
 # SIPquencer: ReadMe
 
+##[Video Demo](https://youtu.be/siliA0u4QeY) 
+
 ## Aim and Overall Structure
 
 The aim of this project is to convert an old telephone into a functional computer music system while retaining its original keypad, handset, and circuits. By utilizing the original vintage hardware to interface with modern digital audio tools, this project merges analog interaction with digital music synthesis and generative art. The system functions as a sequencer capable of handling three different sequences and offers the functionality of a traditional MIDI keyboard. Both synth and drum sounds are available for music creation. Through the GUI, users can tweak sounds and effect parameters, and the handset can be used to modulate these parameters, making live performances more interactive.
